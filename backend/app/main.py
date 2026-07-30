@@ -10,5 +10,4 @@ app = FastAPI(
 def root():
     return {
         "message": "Welcome to AgriRent AI",
-        "hi": "Hi I am Harissh"
     }
