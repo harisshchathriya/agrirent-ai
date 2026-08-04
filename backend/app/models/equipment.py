@@ -6,7 +6,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import uuid
@@ -68,3 +68,16 @@ class Equipment(Base):
         DateTime,
         default=datetime.utcnow,
     )
+
+    owner: Mapped["User"] = relationship(
+        "User",
+        back_populates="owned_equipment",
+    )
+    bookings: Mapped[list["Booking"]] = relationship(
+        "Booking",
+        back_populates="equipment",
+    )
+
+    @property
+    def owner_name(self):
+        return self.owner.name

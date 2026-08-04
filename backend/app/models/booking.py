@@ -4,7 +4,7 @@ from datetime import date, datetime
 
 from sqlalchemy import Date, DateTime, Enum, ForeignKey, Numeric
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
 
@@ -64,3 +64,36 @@ class Booking(Base):
         default=datetime.utcnow,
         nullable=False,
     )
+
+    equipment: Mapped["Equipment"] = relationship(
+        "Equipment",
+        back_populates="bookings",
+    )
+    renter: Mapped["User"] = relationship(
+        "User",
+        back_populates="bookings",
+    )
+
+    @property
+    def farmer_id(self):
+        return self.renter_id
+
+    @property
+    def equipment_name(self):
+        return self.equipment.name
+
+    @property
+    def category(self):
+        return self.equipment.category
+
+    @property
+    def location(self):
+        return self.equipment.location
+
+    @property
+    def price_per_day(self):
+        return float(self.equipment.price_per_day)
+
+    @property
+    def renter_name(self):
+        return self.renter.name

@@ -1,0 +1,75 @@
+import { createContext, useEffect, useState } from "react";
+import { getCurrentUser } from "../services/authService";
+
+export const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [token, setToken] = useState(
+    localStorage.getItem("token")
+  );
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(!!token);
+
+  const login = (jwtToken) => {
+    localStorage.setItem("token", jwtToken);
+    setToken(jwtToken);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setCurrentUser(null);
+    setAuthLoading(false);
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadUser() {
+      if (!token) {
+        setCurrentUser(null);
+        setAuthLoading(false);
+        return;
+      }
+
+      setAuthLoading(true);
+
+      try {
+        const user = await getCurrentUser();
+
+        if (isMounted) {
+          setCurrentUser(user);
+        }
+      } catch {
+        if (isMounted) {
+          logout();
+        }
+      } finally {
+        if (isMounted) {
+          setAuthLoading(false);
+        }
+      }
+    }
+
+    loadUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        token,
+        currentUser,
+        authLoading,
+        login,
+        logout,
+        isAuthenticated: !!token,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}

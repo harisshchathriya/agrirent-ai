@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
 from app.api.equipment import router as equipment_router
@@ -9,19 +10,31 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# ----------------------------
+# CORS Configuration
+# ----------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# ----------------------------
+# Root Endpoint
+# ----------------------------
 @app.get("/")
 def root():
     return {
         "message": "Welcome to AgriRent AI"
     }
 
-
-# Authentication Routes
+# ----------------------------
+# API Routes
+# ----------------------------
 app.include_router(auth_router)
-
-# Equipment Routes
 app.include_router(equipment_router)
-
-# Booking Routes
 app.include_router(booking_router)

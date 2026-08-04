@@ -46,13 +46,7 @@ def create_new_booking(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    new_booking = create_booking(db, booking, current_user)
-    if new_booking is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Booking could not be created.",
-        )
-    return new_booking
+    return create_booking(db, booking, current_user)
 
 
 # ---------------------------------------------------
@@ -79,12 +73,18 @@ def read_bookings(
 def read_booking(
     booking_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     booking = get_booking_by_id(db, booking_id)
     if booking is None:
         raise HTTPException(
             status_code=404,
             detail="Booking not found.",
+        )
+    if booking.renter_id != current_user.id and not is_equipment_owner(db, booking, current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to view this booking.",
         )
     return booking
 
@@ -100,12 +100,18 @@ def update_status(
     booking_id: UUID,
     status: BookingStatusUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     booking = get_booking_by_id(db, booking_id)
     if booking is None:
         raise HTTPException(
             status_code=404,
             detail="Booking not found.",
+        )
+    if booking.renter_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the renter can cancel this booking.",
         )
     return update_booking_status(db, booking, status)
 
@@ -119,12 +125,18 @@ def update_status(
 def remove_booking(
     booking_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     booking = get_booking_by_id(db, booking_id)
     if booking is None:
         raise HTTPException(
             status_code=404,
             detail="Booking not found.",
+        )
+    if booking.renter_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the renter can delete this booking.",
         )
     delete_booking(db, booking)
     return {"message": "Booking deleted successfully."}
@@ -238,13 +250,7 @@ def owner_complete_booking(
             detail="Only the equipment owner can complete this booking.",
         )
 
-    completed = complete_booking(db, booking)
-    if completed is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Only approved bookings can be completed.",
-        )
-    return completed
+    return complete_booking(db, booking)
 
 
 # ---------------------------------------------------
@@ -271,10 +277,4 @@ def owner_cancel_booking(
             detail="Only the equipment owner can cancel this booking.",
         )
 
-    cancelled = cancel_booking(db, booking)
-    if cancelled is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Completed bookings cannot be cancelled.",
-        )
-    return cancelled
+    return cancel_booking(db, booking)

@@ -23,17 +23,18 @@ class BookingUpdate(BookingStatusUpdate):
 class BookingResponse(BaseModel):
     id: UUID
     equipment_id: UUID
+    farmer_id: UUID
     renter_id: UUID
+    renter_name: str | None = None
+
+    equipment_name: str
+    category: str
+    location: str
+    price_per_day: float
 
     start_date: date
     end_date: date
-
     total_price: float
+    status: str
 
-    status: BookingStatus
-
-    created_at: datetime
-
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)

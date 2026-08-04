@@ -1,5 +1,5 @@
 from sqlalchemy import String, Enum, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 import enum
 import uuid
@@ -49,4 +49,13 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
+    )
+
+    owned_equipment: Mapped[list["Equipment"]] = relationship(
+        "Equipment",
+        back_populates="owner",
+    )
+    bookings: Mapped[list["Booking"]] = relationship(
+        "Booking",
+        back_populates="renter",
     )

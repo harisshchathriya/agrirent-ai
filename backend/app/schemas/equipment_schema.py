@@ -32,6 +32,7 @@ class EquipmentUpdate(BaseModel):
 class EquipmentResponse(BaseModel):
     id: UUID
     owner_id: UUID
+    owner_name: str | None = None
 
     name: str
     category: str
