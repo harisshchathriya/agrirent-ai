@@ -1,20 +1,59 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import PageHeader from "../../components/PageHeader";
+import LoadingState from "../../components/LoadingState";
+import ErrorState from "../../components/ErrorState";
+import { AuthContext } from "../../context/authContext";
 import { createBooking } from "../../services/bookingService";
+import { getEquipmentById } from "../../services/equipmentService";
 
 export default function CreateBooking() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useContext(AuthContext);
   const today = new Date().toISOString().split("T")[0];
+  const [equipment, setEquipment] = useState(null);
   const [booking, setBooking] = useState({
     start_date: "",
     end_date: "",
   });
+  const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    async function loadBookingEquipment() {
+      setPageLoading(true);
+      setError("");
+
+      try {
+        const data = await getEquipmentById(id);
+        setEquipment(data);
+      } catch (loadError) {
+        setError(loadError.message);
+      } finally {
+        setPageLoading(false);
+      }
+    }
+
+    loadBookingEquipment();
+  }, [id]);
+
+  async function loadEquipment() {
+    setPageLoading(true);
+    setError("");
+
+    try {
+      const data = await getEquipmentById(id);
+      setEquipment(data);
+    } catch (loadError) {
+      setError(loadError.message);
+    } finally {
+      setPageLoading(false);
+    }
+  }
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -25,8 +64,26 @@ export default function CreateBooking() {
     }));
   }
 
+  const isOwnEquipment =
+    equipment &&
+    currentUser &&
+    equipment.owner_id === currentUser.id;
+
+  const bookingBlockedMessage = !equipment
+    ? ""
+    : !equipment.availability
+      ? "This equipment is currently unavailable for booking."
+      : isOwnEquipment
+        ? "You cannot book your own equipment."
+        : "";
+
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (bookingBlockedMessage) {
+      setError(bookingBlockedMessage);
+      return;
+    }
 
     if (booking.start_date < today) {
       setError(`Start date cannot be before today (${today}).`);
@@ -56,11 +113,31 @@ export default function CreateBooking() {
       setTimeout(() => {
         navigate("/bookings");
       }, 800);
-    } catch (error) {
-      setError(error.message);
+    } catch (submitError) {
+      setError(submitError.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  if (pageLoading) {
+    return (
+      <MainLayout>
+        <LoadingState message="Loading equipment details..." />
+      </MainLayout>
+    );
+  }
+
+  if (error && !equipment) {
+    return (
+      <MainLayout>
+        <ErrorState
+          title="Unable to load booking form"
+          message={error}
+          onRetry={loadEquipment}
+        />
+      </MainLayout>
+    );
   }
 
   return (
@@ -69,6 +146,20 @@ export default function CreateBooking() {
         title="Book Equipment"
         description="Choose your rental dates and create a booking using the live backend validation rules."
       />
+
+      {equipment ? (
+        <div className="mb-6 rounded-[2rem] border border-emerald-100 bg-white/90 p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
+            Equipment
+          </p>
+          <h2 className="mt-2 text-3xl font-bold text-slate-900">
+            {equipment.name}
+          </h2>
+          <p className="mt-2 text-slate-600">
+            {equipment.location} - Rs. {equipment.price_per_day} per day
+          </p>
+        </div>
+      ) : null}
 
       <form
         onSubmit={handleSubmit}
@@ -122,10 +213,14 @@ export default function CreateBooking() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !!bookingBlockedMessage}
           className="mt-8 rounded-xl bg-emerald-700 px-8 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:bg-emerald-400"
         >
-          {loading ? "Booking..." : "Book Now"}
+          {loading
+            ? "Booking..."
+            : bookingBlockedMessage
+              ? "Booking Unavailable"
+              : "Book Now"}
         </button>
       </form>
     </MainLayout>

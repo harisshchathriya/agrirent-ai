@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaMapMarkerAlt, FaTractor, FaUser } from "react-icons/fa";
 import ErrorState from "../../components/ErrorState";
@@ -6,17 +6,33 @@ import LoadingState from "../../components/LoadingState";
 import MainLayout from "../../layouts/MainLayout";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
+import { AuthContext } from "../../context/authContext";
 import { getEquipmentById } from "../../services/equipmentService";
 import { formatCurrency } from "../../utils/formatters";
 
 export default function EquipmentDetails() {
   const { id } = useParams();
+  const { currentUser } = useContext(AuthContext);
   const [equipment, setEquipment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    loadEquipment();
+    async function loadEquipmentDetails() {
+      setLoading(true);
+      setError("");
+
+      try {
+        const data = await getEquipmentById(id);
+        setEquipment(data);
+      } catch (loadError) {
+        setError(loadError.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadEquipmentDetails();
   }, [id]);
 
   async function loadEquipment() {
@@ -63,6 +79,15 @@ export default function EquipmentDetails() {
       </MainLayout>
     );
   }
+
+  const isOwnEquipment =
+    currentUser &&
+    equipment.owner_id === currentUser.id;
+  const bookingBlockedMessage = !equipment.availability
+    ? "This equipment is currently unavailable for booking."
+    : isOwnEquipment
+      ? "You cannot book your own equipment."
+      : "";
 
   return (
     <MainLayout>
@@ -125,12 +150,18 @@ export default function EquipmentDetails() {
             />
           </div>
 
-          <Link
-            to={`/bookings/create/${equipment.id}`}
-            className="mt-10 inline-flex rounded-xl bg-emerald-700 px-10 py-4 font-semibold text-white transition hover:bg-emerald-800"
-          >
-            Book Equipment
-          </Link>
+          {bookingBlockedMessage ? (
+            <div className="mt-10 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-800">
+              {bookingBlockedMessage}
+            </div>
+          ) : (
+            <Link
+              to={`/bookings/create/${equipment.id}`}
+              className="mt-10 inline-flex rounded-xl bg-emerald-700 px-10 py-4 font-semibold text-white transition hover:bg-emerald-800"
+            >
+              Book Equipment
+            </Link>
+          )}
         </div>
       </div>
     </MainLayout>

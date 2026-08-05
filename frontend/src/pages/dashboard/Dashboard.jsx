@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardCard from "../../components/DashboardCard";
 import ErrorState from "../../components/ErrorState";
 import LoadingState from "../../components/LoadingState";
@@ -46,12 +46,14 @@ export default function Dashboard() {
     }
   }
 
-  const bookingMap = useMemo(() => {
-    const entries = [...myBookings, ...ownerBookings];
-    return new Map(entries.map((booking) => [booking.id, booking]));
-  }, [myBookings, ownerBookings]);
-
-  const combinedBookings = [...bookingMap.values()];
+  const combinedBookings = Array.from(
+    new Map(
+      [...myBookings, ...ownerBookings].map((booking) => [
+        booking.id,
+        booking,
+      ])
+    ).values()
+  );
   const activeBookings = combinedBookings.filter(
     (booking) => booking.status === "approved"
   ).length;
@@ -64,6 +66,7 @@ export default function Dashboard() {
   const availableEquipment = equipment.filter(
     (item) => item.availability
   ).length;
+  const bookedEquipment = equipment.length - availableEquipment;
 
   return (
     <MainLayout>
@@ -120,9 +123,43 @@ export default function Dashboard() {
               Live Snapshot
             </h2>
 
-            <p className="mt-4 max-w-3xl leading-8 text-slate-600">
-              The dashboard now reflects current backend state instead of placeholder counts. Equipment availability, booking approvals, and completion metrics update directly from the API responses.
-            </p>
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
+                  Inventory
+                </p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">
+                  {equipment.length} listings tracked
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
+                  Availability
+                </p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">
+                  {availableEquipment} available, {bookedEquipment} booked
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
+                  Requests
+                </p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">
+                  {pendingRequests} waiting for owner action
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
+                  Rentals
+                </p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">
+                  {activeBookings} active, {completedRentals} completed
+                </p>
+              </div>
+            </div>
           </div>
         </>
       )}

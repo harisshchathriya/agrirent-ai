@@ -133,32 +133,27 @@ export default function MyBookings() {
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-6 border-t border-slate-200 pt-6 md:grid-cols-2">
-                <div className="flex items-center gap-3">
+              <div className="mt-8 grid gap-6 border-t border-slate-200 pt-6 md:grid-cols-3">
+                <div className="flex items-center gap-3 md:col-span-2">
                   <FaCalendarAlt className="text-emerald-700" />
 
                   <div>
                     <p className="text-sm text-slate-500">
-                      Rental Start
+                      Rental Dates
                     </p>
 
                     <p className="font-semibold">
-                      {formatDate(booking.start_date)}
+                      {formatDate(booking.start_date)} - {formatDate(booking.end_date)}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <FaCalendarAlt className="text-emerald-700" />
-
-                  <div>
-                    <p className="text-sm text-slate-500">
-                      Rental End
-                    </p>
-
-                    <p className="font-semibold">
-                      {formatDate(booking.end_date)}
-                    </p>
+                <div>
+                  <p className="text-sm text-slate-500">
+                    Booking Status
+                  </p>
+                  <div className="mt-2">
+                    <StatusBadge status={booking.status} />
                   </div>
                 </div>
               </div>

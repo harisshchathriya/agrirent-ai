@@ -23,14 +23,16 @@ export default function AddEquipment() {
   function handleChange(event) {
     const { name, value } = event.target;
 
-    setFormData({
-      ...formData,
+    setFormData((currentFormData) => ({
+      ...currentFormData,
       [name]: value,
-    });
+    }));
     setErrors((currentErrors) => ({
       ...currentErrors,
       [name]: "",
     }));
+    setSubmitError("");
+    setSuccessMessage("");
   }
 
   function validateForm() {
@@ -74,6 +76,10 @@ export default function AddEquipment() {
     try {
       await createEquipment({
         ...formData,
+        name: formData.name.trim(),
+        category: formData.category.trim(),
+        description: formData.description.trim(),
+        location: formData.location.trim(),
         price_per_day: Number(formData.price_per_day),
       });
 
@@ -99,125 +105,153 @@ export default function AddEquipment() {
         description="Create a new equipment listing with validated backend-backed data."
       />
 
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-[2rem] border border-emerald-100 bg-white/90 p-8 shadow-sm"
-      >
-        <div className="grid gap-6 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block font-semibold text-slate-700">
-              Equipment Name
-            </label>
-            <input
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Mahindra Tractor"
-              className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
-            />
-            {errors.name ? (
-              <p className="mt-2 text-sm text-rose-600">
-                {errors.name}
-              </p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className="mb-2 block font-semibold text-slate-700">
-              Category
-            </label>
-            <input
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              placeholder="Heavy"
-              className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
-            />
-            {errors.category ? (
-              <p className="mt-2 text-sm text-rose-600">
-                {errors.category}
-              </p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className="mb-2 block font-semibold text-slate-700">
-              Location
-            </label>
-            <input
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="Chennai"
-              className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
-            />
-            {errors.location ? (
-              <p className="mt-2 text-sm text-rose-600">
-                {errors.location}
-              </p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className="mb-2 block font-semibold text-slate-700">
-              Price Per Day
-            </label>
-            <input
-              name="price_per_day"
-              type="number"
-              min="1"
-              value={formData.price_per_day}
-              onChange={handleChange}
-              placeholder="3000"
-              className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
-            />
-            {errors.price_per_day ? (
-              <p className="mt-2 text-sm text-rose-600">
-                {errors.price_per_day}
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <label className="mb-2 block font-semibold text-slate-700">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Describe the equipment, condition, and ideal use cases."
-            rows={5}
-            className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
-          />
-          {errors.description ? (
-            <p className="mt-2 text-sm text-rose-600">
-              {errors.description}
-            </p>
-          ) : null}
-        </div>
-
-        {successMessage ? (
-          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
-            {successMessage}
-          </div>
-        ) : null}
-
-        {submitError ? (
-          <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700">
-            {submitError}
-          </div>
-        ) : null}
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="mt-8 w-full rounded-xl bg-emerald-700 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-400"
+      <div className="grid gap-8 xl:grid-cols-[1.2fr_0.8fr]">
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-[2rem] border border-emerald-100 bg-white/90 p-8 shadow-sm"
         >
-          {saving ? "Saving Equipment..." : "Save Equipment"}
-        </button>
-      </form>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <label className="mb-2 block font-semibold text-slate-700">
+                Equipment Name
+              </label>
+              <input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Mahindra Tractor"
+                required
+                className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
+              />
+              {errors.name ? (
+                <p className="mt-2 text-sm text-rose-600">
+                  {errors.name}
+                </p>
+              ) : null}
+            </div>
+
+            <div>
+              <label className="mb-2 block font-semibold text-slate-700">
+                Category
+              </label>
+              <input
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                placeholder="Heavy"
+                required
+                className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
+              />
+              {errors.category ? (
+                <p className="mt-2 text-sm text-rose-600">
+                  {errors.category}
+                </p>
+              ) : null}
+            </div>
+
+            <div>
+              <label className="mb-2 block font-semibold text-slate-700">
+                Location
+              </label>
+              <input
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Chennai"
+                required
+                className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
+              />
+              {errors.location ? (
+                <p className="mt-2 text-sm text-rose-600">
+                  {errors.location}
+                </p>
+              ) : null}
+            </div>
+
+            <div>
+              <label className="mb-2 block font-semibold text-slate-700">
+                Price Per Day
+              </label>
+              <input
+                name="price_per_day"
+                type="number"
+                min="1"
+                step="0.01"
+                value={formData.price_per_day}
+                onChange={handleChange}
+                placeholder="3000"
+                required
+                className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
+              />
+              {errors.price_per_day ? (
+                <p className="mt-2 text-sm text-rose-600">
+                  {errors.price_per_day}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="mb-2 block font-semibold text-slate-700">
+              Description
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Describe the equipment, condition, and ideal use cases."
+              rows={5}
+              required
+              className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
+            />
+            {errors.description ? (
+              <p className="mt-2 text-sm text-rose-600">
+                {errors.description}
+              </p>
+            ) : null}
+          </div>
+
+          {successMessage ? (
+            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
+              {successMessage}
+            </div>
+          ) : null}
+
+          {submitError ? (
+            <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700">
+              {submitError}
+            </div>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="mt-8 w-full rounded-xl bg-emerald-700 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-400"
+          >
+            {saving ? "Saving Equipment..." : "Save Equipment"}
+          </button>
+        </form>
+
+        <div className="rounded-[2rem] border border-emerald-100 bg-white/80 p-8 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
+            Listing Tips
+          </p>
+          <h2 className="mt-3 text-3xl font-bold text-slate-900">
+            Publish equipment renters can trust
+          </h2>
+          <div className="mt-6 space-y-4 text-slate-600">
+            <p>
+              Use a clear equipment name and category so renters can find the listing quickly in search and filters.
+            </p>
+            <p>
+              Set an accurate daily price and describe condition, attachments, and ideal farming use cases.
+            </p>
+            <p>
+              After saving, the listing appears immediately in the live equipment catalog and can be booked through the same backend APIs.
+            </p>
+          </div>
+        </div>
+      </div>
     </MainLayout>
   );
 }

@@ -13,12 +13,18 @@ export default function StatusBadge({ status, label }) {
   const className =
     statusStyles[normalizedStatus] ||
     "bg-slate-100 text-slate-700";
+  const statusLabel =
+    label ||
+    normalizedStatus.replace(
+      /\b\w/g,
+      (character) => character.toUpperCase()
+    );
 
   return (
     <span
       className={`inline-flex rounded-full px-4 py-2 text-sm font-semibold ${className}`}
     >
-      {label || status}
+      {statusLabel}
     </span>
   );
 }

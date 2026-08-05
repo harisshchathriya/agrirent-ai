@@ -1,57 +1,32 @@
 import api from "../api/axios";
-import { getErrorMessage } from "./apiUtils";
+import { requestData } from "./apiUtils";
 
-export const getEquipment = async () => {
-  try {
-    const response = await api.get("/equipment");
-    return response.data;
-  } catch (error) {
-    throw new Error(
-      getErrorMessage(error, "Failed to load equipment.")
-    );
-  }
-};
+export const getEquipment = async () =>
+  requestData(
+    () => api.get("/equipment"),
+    "Failed to load equipment."
+  );
 
-export const getEquipmentById = async (id) => {
-  try {
-    const response = await api.get(`/equipment/${id}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(
-      getErrorMessage(error, "Failed to load equipment details.")
-    );
-  }
-};
+export const getEquipmentById = async (id) =>
+  requestData(
+    () => api.get(`/equipment/${id}`),
+    "Failed to load equipment details."
+  );
 
-export const createEquipment = async (equipmentData) => {
-  try {
-    const response = await api.post("/equipment", equipmentData);
-    return response.data;
-  } catch (error) {
-    throw new Error(
-      getErrorMessage(error, "Failed to create equipment.")
-    );
-  }
-};
+export const createEquipment = async (equipmentData) =>
+  requestData(
+    () => api.post("/equipment", equipmentData),
+    "Failed to create equipment."
+  );
 
-export const updateEquipment = async (id, equipmentData) => {
-  try {
-    const response = await api.put(`/equipment/${id}`, equipmentData);
-    return response.data;
-  } catch (error) {
-    throw new Error(
-      getErrorMessage(error, "Failed to update equipment.")
-    );
-  }
-};
+export const updateEquipment = async (id, equipmentData) =>
+  requestData(
+    () => api.put(`/equipment/${id}`, equipmentData),
+    "Failed to update equipment."
+  );
 
-export const deleteEquipment = async (id) => {
-  try {
-    const response = await api.delete(`/equipment/${id}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(
-      getErrorMessage(error, "Failed to delete equipment.")
-    );
-  }
-};
+export const deleteEquipment = async (id) =>
+  requestData(
+    () => api.delete(`/equipment/${id}`),
+    "Failed to delete equipment."
+  );

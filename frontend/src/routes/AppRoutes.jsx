@@ -1,4 +1,9 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
 
 // Authentication
 import Login from "../pages/auth/Login";
@@ -26,6 +31,11 @@ export default function AppRoutes() {
         <Route
           path="/"
           element={<Login />}
+        />
+
+        <Route
+          path="/login"
+          element={<Navigate to="/" replace />}
         />
 
         <Route
@@ -73,6 +83,11 @@ export default function AppRoutes() {
         <Route
           path="/owner"
           element={<OwnerBookings />}
+        />
+
+        <Route
+          path="*"
+          element={<Navigate to="/dashboard" replace />}
         />
 
       </Routes>

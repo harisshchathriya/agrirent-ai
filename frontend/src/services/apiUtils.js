@@ -5,3 +5,15 @@ export function getErrorMessage(error, fallbackMessage) {
     fallbackMessage
   );
 }
+
+export async function requestData(callback, fallbackMessage) {
+  try {
+    const response = await callback();
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      getErrorMessage(error, fallbackMessage),
+      { cause: error }
+    );
+  }
+}

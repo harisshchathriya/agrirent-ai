@@ -1,5 +1,8 @@
 import api from "../api/axios";
-import { getErrorMessage } from "./apiUtils";
+import {
+  getErrorMessage,
+  requestData,
+} from "./apiUtils";
 
 export const registerUser = async (userData) => {
   try {
@@ -7,7 +10,8 @@ export const registerUser = async (userData) => {
     return response.data;
   } catch (error) {
     throw new Error(
-      getErrorMessage(error, "Failed to register user.")
+      getErrorMessage(error, "Failed to register user."),
+      { cause: error }
     );
   }
 };
@@ -33,18 +37,14 @@ export const loginUser = async (email, password) => {
     return response.data;
   } catch (error) {
     throw new Error(
-      getErrorMessage(error, "Invalid email or password.")
+      getErrorMessage(error, "Invalid email or password."),
+      { cause: error }
     );
   }
 };
 
-export const getCurrentUser = async () => {
-  try {
-    const response = await api.get("/auth/users/me");
-    return response.data;
-  } catch (error) {
-    throw new Error(
-      getErrorMessage(error, "Failed to load current user.")
-    );
-  }
-};
+export const getCurrentUser = async () =>
+  requestData(
+    () => api.get("/auth/users/me"),
+    "Failed to load current user."
+  );

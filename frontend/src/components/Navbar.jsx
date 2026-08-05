@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { FaTractor, FaUserCircle } from "react-icons/fa";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/authContext";
 
 export default function Navbar() {
   const { currentUser } = useContext(AuthContext);

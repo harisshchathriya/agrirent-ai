@@ -162,7 +162,7 @@ export default function OwnerBookings() {
 
                     <div className="mt-3 flex items-center gap-2 text-slate-600">
                       <FaUser className="text-emerald-700" />
-                      Customer: {booking.renter_name || "Customer"}
+                      Farmer: {booking.renter_name || "Renter"}
                     </div>
 
                     <div className="mt-3 flex items-center gap-2 text-slate-600">
@@ -198,26 +198,21 @@ export default function OwnerBookings() {
 
                   <div>
                     <p className="text-sm text-slate-500">
-                      Booking Start
+                      Rental Dates
                     </p>
 
                     <p className="font-semibold">
-                      {formatDate(booking.start_date)}
+                      {formatDate(booking.start_date)} - {formatDate(booking.end_date)}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <FaCalendarAlt className="text-emerald-700" />
-
-                  <div>
-                    <p className="text-sm text-slate-500">
-                      Booking End
-                    </p>
-
-                    <p className="font-semibold">
-                      {formatDate(booking.end_date)}
-                    </p>
+                <div>
+                  <p className="text-sm text-slate-500">
+                    Status
+                  </p>
+                  <div className="mt-2">
+                    <StatusBadge status={booking.status} />
                   </div>
                 </div>
               </div>

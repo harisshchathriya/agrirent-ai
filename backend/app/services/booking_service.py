@@ -1,7 +1,6 @@
 from datetime import date
 from uuid import UUID
 
-from fastapi import HTTPException, status
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
@@ -31,40 +30,23 @@ def create_booking(
 
     # Equipment not found
     if equipment is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="This equipment no longer exists.",
-        )
+        return None
 
     # Equipment unavailable
     if not equipment.availability:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="This equipment is currently unavailable for booking.",
-        )
+        return None
 
     # Cannot rent own equipment
     if equipment.owner_id == current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot book your own equipment.",
-        )
+        return None
 
     # Past date
     if booking.start_date < date.today():
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=(
-                f"Start date cannot be before today ({date.today()})."
-            ),
-        )
+        return None
 
     # Invalid date range
     if booking.end_date < booking.start_date:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="End date must be on or after the start date.",
-        )
+        return None
 
     # Prevent overlapping bookings
     existing_booking = (
@@ -86,10 +68,7 @@ def create_booking(
     )
 
     if existing_booking:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="These dates overlap with an existing booking.",
-        )
+        return None
 
     # Calculate total price
     days = (booking.end_date - booking.start_date).days + 1
@@ -139,21 +118,9 @@ def get_booking_by_id(
 def update_booking_status(
     db: Session,
     booking: Booking,
-    status_update: BookingStatusUpdate,
+    status: BookingStatusUpdate,
 ):
-    if status_update.status != BookingStatus.CANCELLED:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only booking cancellation is allowed from this endpoint.",
-        )
-
-    if booking.status != BookingStatus.PENDING:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Only pending bookings can be cancelled.",
-        )
-
-    booking.status = BookingStatus(status_update.status)
+    booking.status = BookingStatus(status.status)
     db.commit()
     db.refresh(booking)
     return booking
@@ -233,12 +200,6 @@ def approve_booking(
     db: Session,
     booking: Booking,
 ):
-    if booking.status != BookingStatus.PENDING:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Only pending bookings can be approved.",
-        )
-
     booking.status = BookingStatus.APPROVED
 
     equipment = (
@@ -261,12 +222,6 @@ def reject_booking(
     db: Session,
     booking: Booking,
 ):
-    if booking.status != BookingStatus.PENDING:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Only pending bookings can be rejected.",
-        )
-
     booking.status = BookingStatus.REJECTED
     db.commit()
     db.refresh(booking)
@@ -282,10 +237,7 @@ def complete_booking(
 ):
     # Only approved bookings can be completed
     if booking.status != BookingStatus.APPROVED:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Only approved bookings can be completed.",
-        )
+        return None
 
     booking.status = BookingStatus.COMPLETED
 
@@ -309,11 +261,9 @@ def cancel_booking(
     db: Session,
     booking: Booking,
 ):
-    if booking.status != BookingStatus.APPROVED:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Only approved bookings can be cancelled by the owner.",
-        )
+    # Completed bookings cannot be cancelled
+    if booking.status == BookingStatus.COMPLETED:
+        return None
 
     booking.status = BookingStatus.CANCELLED
 
