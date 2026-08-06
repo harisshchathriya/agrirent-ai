@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import ToastViewport from "../components/ToastViewport";
 import { ToastContext } from "./toastContext";
 
@@ -36,13 +36,10 @@ export function ToastProvider({ children }) {
     }, duration);
   }
 
-  const value = useMemo(
-    () => ({
-      addToast,
-      removeToast,
-    }),
-    []
-  );
+  const value = {
+    addToast,
+    removeToast,
+  };
 
   return (
     <ToastContext.Provider value={value}>

@@ -13,7 +13,7 @@ import StatusBadge from "../../components/StatusBadge";
 import MainLayout from "../../layouts/MainLayout";
 import {
   approveBooking,
-  cancelBooking,
+  cancelOwnerBooking,
   completeBooking,
   getOwnerBookings,
   rejectBooking,
@@ -72,7 +72,7 @@ export default function OwnerBookings() {
             type="button"
             disabled={isSaving}
             onClick={() => handleAction(booking.id, approveBooking)}
-            className="rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:bg-emerald-300"
+            className="min-w-32 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:bg-emerald-300"
           >
             {isSaving ? "Saving..." : "Approve"}
           </button>
@@ -81,7 +81,7 @@ export default function OwnerBookings() {
             type="button"
             disabled={isSaving}
             onClick={() => handleAction(booking.id, rejectBooking)}
-            className="rounded-xl bg-rose-600 px-5 py-3 font-semibold text-white transition hover:bg-rose-700 disabled:bg-rose-300"
+            className="min-w-32 rounded-xl bg-rose-600 px-5 py-3 font-semibold text-white transition hover:bg-rose-700 disabled:bg-rose-300"
           >
             Reject
           </button>
@@ -96,7 +96,7 @@ export default function OwnerBookings() {
             type="button"
             disabled={isSaving}
             onClick={() => handleAction(booking.id, completeBooking)}
-            className="rounded-xl bg-sky-600 px-5 py-3 font-semibold text-white transition hover:bg-sky-700 disabled:bg-sky-300"
+            className="min-w-32 rounded-xl bg-sky-600 px-5 py-3 font-semibold text-white transition hover:bg-sky-700 disabled:bg-sky-300"
           >
             {isSaving ? "Saving..." : "Complete"}
           </button>
@@ -104,8 +104,8 @@ export default function OwnerBookings() {
           <button
             type="button"
             disabled={isSaving}
-            onClick={() => handleAction(booking.id, cancelBooking)}
-            className="rounded-xl bg-slate-700 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-300"
+            onClick={() => handleAction(booking.id, cancelOwnerBooking)}
+            className="min-w-32 rounded-xl bg-slate-700 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:bg-slate-300"
           >
             Cancel
           </button>
@@ -143,47 +143,43 @@ export default function OwnerBookings() {
           description="Owner booking requests will appear here when renters submit them."
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {bookings.map((booking) => (
             <div
               key={booking.id}
               className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-sm"
             >
-              <div className="flex flex-col justify-between gap-8 xl:flex-row">
-                <div className="flex gap-6">
-                  <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 via-lime-50 to-amber-50">
-                    <FaTractor className="text-6xl text-emerald-700" />
+              <div className="flex flex-col justify-between gap-6 xl:flex-row">
+                <div className="flex gap-5">
+                  <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 via-lime-50 to-amber-50">
+                    <FaTractor className="text-5xl text-emerald-700" />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <h2 className="text-2xl font-bold text-slate-900">
                       {booking.equipment_name}
                     </h2>
 
-                    <div className="mt-3 flex items-center gap-2 text-slate-600">
+                    <p className="mt-1 text-sm font-medium text-slate-500">
+                      {booking.category}
+                    </p>
+
+                    <div className="mt-4 flex items-center gap-2 text-sm text-slate-600">
                       <FaUser className="text-emerald-700" />
-                      Farmer: {booking.renter_name || "Renter"}
+                      Customer: {booking.renter_name || "Renter"}
                     </div>
 
-                    <div className="mt-3 flex items-center gap-2 text-slate-600">
+                    <div className="mt-3 flex items-center gap-2 text-sm text-slate-600">
                       <FaMapMarkerAlt className="text-emerald-700" />
                       {booking.location}
                     </div>
-
-                    <p className="mt-4 text-sm text-slate-500">
-                      Price Per Day
-                    </p>
-
-                    <p className="text-xl font-semibold text-emerald-700">
-                      {formatCurrency(booking.price_per_day)}
-                    </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-start gap-5 xl:items-end">
+                <div className="flex flex-col items-start gap-4 xl:items-end">
                   <StatusBadge status={booking.status} />
 
-                  <p className="text-right text-sm text-slate-500">
+                  <p className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-slate-500 xl:text-right">
                     Total Price
                     <span className="mt-1 block text-2xl font-bold text-emerald-700">
                       {formatCurrency(booking.total_price)}
@@ -192,14 +188,12 @@ export default function OwnerBookings() {
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-6 border-t border-slate-200 pt-6 md:grid-cols-2">
+              <div className="mt-6 grid gap-5 border-t border-slate-200 pt-6 md:grid-cols-3">
                 <div className="flex items-center gap-3">
                   <FaCalendarAlt className="text-emerald-700" />
 
                   <div>
-                    <p className="text-sm text-slate-500">
-                      Rental Dates
-                    </p>
+                    <p className="text-sm text-slate-500">Booking Dates</p>
 
                     <p className="font-semibold">
                       {formatDate(booking.start_date)} - {formatDate(booking.end_date)}
@@ -208,16 +202,21 @@ export default function OwnerBookings() {
                 </div>
 
                 <div>
-                  <p className="text-sm text-slate-500">
-                    Status
+                  <p className="text-sm text-slate-500">Price Per Day</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-900">
+                    {formatCurrency(booking.price_per_day)}
                   </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500">Status</p>
                   <div className="mt-2">
                     <StatusBadge status={booking.status} />
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-4">
+              <div className="mt-6 flex flex-wrap gap-3">
                 {renderActions(booking)}
               </div>
             </div>

@@ -7,6 +7,7 @@ import ErrorState from "../../components/ErrorState";
 import { AuthContext } from "../../context/authContext";
 import { createBooking } from "../../services/bookingService";
 import { getEquipmentById } from "../../services/equipmentService";
+import { formatCurrency } from "../../utils/formatters";
 
 export default function CreateBooking() {
   const { id } = useParams();
@@ -90,8 +91,8 @@ export default function CreateBooking() {
       return;
     }
 
-    if (booking.end_date < booking.start_date) {
-      setError("End date must be on or after the start date.");
+    if (booking.end_date <= booking.start_date) {
+      setError("End date must be after the start date.");
       return;
     }
 
@@ -152,12 +153,25 @@ export default function CreateBooking() {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
             Equipment
           </p>
-          <h2 className="mt-2 text-3xl font-bold text-slate-900">
-            {equipment.name}
-          </h2>
-          <p className="mt-2 text-slate-600">
-            {equipment.location} - Rs. {equipment.price_per_day} per day
-          </p>
+          <div className="mt-3 grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
+            <div>
+              <h2 className="text-3xl font-bold text-slate-900">
+                {equipment.name}
+              </h2>
+              <p className="mt-2 text-sm font-medium text-slate-500">
+                {equipment.category}
+              </p>
+              <p className="mt-3 text-slate-600">
+                {equipment.location}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4">
+              <p className="text-sm text-slate-500">Price Per Day</p>
+              <p className="text-2xl font-bold text-emerald-700">
+                {formatCurrency(equipment.price_per_day)}
+              </p>
+            </div>
+          </div>
         </div>
       ) : null}
 
@@ -214,7 +228,7 @@ export default function CreateBooking() {
         <button
           type="submit"
           disabled={loading || !!bookingBlockedMessage}
-          className="mt-8 rounded-xl bg-emerald-700 px-8 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:bg-emerald-400"
+          className="mt-8 inline-flex min-w-44 justify-center rounded-xl bg-emerald-700 px-8 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:bg-emerald-400"
         >
           {loading
             ? "Booking..."

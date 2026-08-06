@@ -66,6 +66,15 @@ export const completeBooking = async (id) =>
 
 export const cancelBooking = async (id) =>
   requestData(
+    () =>
+      api.put(`/bookings/${id}/status`, {
+        status: "cancelled",
+      }),
+    "Failed to cancel your booking."
+  );
+
+export const cancelOwnerBooking = async (id) =>
+  requestData(
     () => api.put(`/bookings/owner/bookings/${id}/cancel`),
     "Failed to cancel booking."
   );

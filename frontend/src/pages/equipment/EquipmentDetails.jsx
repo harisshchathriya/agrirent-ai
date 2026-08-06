@@ -96,7 +96,7 @@ export default function EquipmentDetails() {
         description="Live equipment data from the backend, including booking availability and pricing."
       />
 
-      <div className="grid gap-10 rounded-[2rem] border border-emerald-100 bg-white/90 p-8 shadow-sm lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-8 rounded-[2rem] border border-emerald-100 bg-white/90 p-6 shadow-sm lg:grid-cols-[1.1fr_0.9fr] lg:p-8">
         <div className="overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-emerald-50 via-lime-50 to-amber-50">
           {equipment.image_url ? (
             <img
@@ -106,21 +106,21 @@ export default function EquipmentDetails() {
             />
           ) : (
             <div className="flex min-h-[24rem] items-center justify-center">
-              <FaTractor className="text-9xl text-emerald-700" />
+              <FaTractor className="text-[7rem] text-emerald-700 lg:text-[8rem]" />
             </div>
           )}
         </div>
 
-        <div>
-          <h1 className="text-5xl font-bold text-slate-900">
+        <div className="flex flex-col">
+          <h1 className="text-4xl font-bold text-slate-900 lg:text-5xl">
             {equipment.name}
           </h1>
 
-          <p className="mt-3 text-lg text-emerald-700">
+          <p className="mt-3 text-lg font-semibold text-emerald-700">
             {equipment.category}
           </p>
 
-          <p className="mt-6 leading-8 text-slate-600">
+          <p className="mt-6 text-base leading-8 text-slate-600">
             {equipment.description}
           </p>
 
@@ -144,20 +144,23 @@ export default function EquipmentDetails() {
               {equipment.owner_name || "Owner details unavailable"}
             </div>
 
-            <StatusBadge
-              status={equipment.availability ? "available" : "unavailable"}
-              label={equipment.availability ? "Available" : "Booked"}
-            />
+            <div>
+              <p className="mb-2 text-sm text-slate-500">Availability</p>
+              <StatusBadge
+                status={equipment.availability ? "available" : "unavailable"}
+                label={equipment.availability ? "Available" : "Booked"}
+              />
+            </div>
           </div>
 
           {bookingBlockedMessage ? (
-            <div className="mt-10 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-800">
+            <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-800">
               {bookingBlockedMessage}
             </div>
           ) : (
             <Link
               to={`/bookings/create/${equipment.id}`}
-              className="mt-10 inline-flex rounded-xl bg-emerald-700 px-10 py-4 font-semibold text-white transition hover:bg-emerald-800"
+              className="mt-8 inline-flex w-full justify-center rounded-xl bg-emerald-700 px-6 py-4 font-semibold text-white transition hover:bg-emerald-800 sm:w-auto sm:min-w-48"
             >
               Book Equipment
             </Link>

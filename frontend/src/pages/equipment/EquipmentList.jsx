@@ -143,7 +143,7 @@ export default function EquipmentList() {
           description="Adjust the search or filter settings, or add a new equipment listing."
         />
       ) : (
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {filteredEquipment.map((equipment) => (
             <EquipmentCard
               key={equipment.id}

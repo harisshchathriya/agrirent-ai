@@ -8,8 +8,8 @@ import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
 import MainLayout from "../../layouts/MainLayout";
 import {
+  cancelBooking,
   getMyBookings,
-  updateBookingStatus,
 } from "../../services/bookingService";
 import {
   formatCurrency,
@@ -46,7 +46,7 @@ export default function MyBookings() {
     setActionError("");
 
     try {
-      await updateBookingStatus(bookingId, "cancelled");
+      await cancelBooking(bookingId);
       await loadBookings();
     } catch (error) {
       setActionError(error.message);
@@ -82,65 +82,52 @@ export default function MyBookings() {
           description="Start by browsing available equipment and create your first rental."
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {bookings.map((booking) => (
             <div
               key={booking.id}
-              className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-sm transition hover:shadow-lg"
+              className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-sm transition hover:shadow-md"
             >
-              <div className="flex flex-col justify-between gap-8 lg:flex-row">
-                <div className="flex gap-6">
-                  <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 via-lime-50 to-amber-50">
-                    <FaTractor className="text-6xl text-emerald-700" />
+              <div className="flex flex-col justify-between gap-6 lg:flex-row">
+                <div className="flex gap-5">
+                  <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 via-lime-50 to-amber-50">
+                    <FaTractor className="text-5xl text-emerald-700" />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <h2 className="text-2xl font-bold text-slate-900">
                       {booking.equipment_name}
                     </h2>
 
-                    <p className="text-slate-500">
+                    <p className="mt-1 text-sm font-medium text-slate-500">
                       {booking.category}
                     </p>
 
-                    <div className="mt-4 flex items-center gap-2 text-slate-600">
+                    <div className="mt-4 flex items-center gap-2 text-sm text-slate-600">
                       <FaMapMarkerAlt />
                       {booking.location}
                     </div>
-
-                    <p className="mt-4 text-sm text-slate-500">
-                      Price Per Day
-                    </p>
-
-                    <p className="text-xl font-semibold text-emerald-700">
-                      {formatCurrency(booking.price_per_day)}
-                    </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-start lg:items-end">
+                <div className="flex flex-col items-start gap-4 lg:items-end">
                   <StatusBadge status={booking.status} />
 
-                  <div className="mt-6 text-right">
-                    <p className="text-slate-500">
-                      Total Price
-                    </p>
-
-                    <p className="text-3xl font-bold text-emerald-700">
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 lg:text-right">
+                    <p className="text-sm text-slate-500">Total Price</p>
+                    <p className="text-2xl font-bold text-emerald-700">
                       {formatCurrency(booking.total_price)}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-6 border-t border-slate-200 pt-6 md:grid-cols-3">
-                <div className="flex items-center gap-3 md:col-span-2">
+              <div className="mt-6 grid gap-5 border-t border-slate-200 pt-6 md:grid-cols-3">
+                <div className="flex items-center gap-3">
                   <FaCalendarAlt className="text-emerald-700" />
 
                   <div>
-                    <p className="text-sm text-slate-500">
-                      Rental Dates
-                    </p>
+                    <p className="text-sm text-slate-500">Rental Period</p>
 
                     <p className="font-semibold">
                       {formatDate(booking.start_date)} - {formatDate(booking.end_date)}
@@ -149,19 +136,24 @@ export default function MyBookings() {
                 </div>
 
                 <div>
-                  <p className="text-sm text-slate-500">
-                    Booking Status
+                  <p className="text-sm text-slate-500">Price Per Day</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-900">
+                    {formatCurrency(booking.price_per_day)}
                   </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500">Booking Status</p>
                   <div className="mt-2">
                     <StatusBadge status={booking.status} />
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-4">
+              <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   to={`/equipment/details/${booking.equipment_id}`}
-                  className="inline-flex min-w-40 justify-center rounded-xl bg-emerald-700 px-6 py-3 text-white transition hover:bg-emerald-800"
+                  className="inline-flex min-w-40 justify-center rounded-xl bg-emerald-700 px-6 py-3 font-semibold text-white transition hover:bg-emerald-800"
                 >
                   View Equipment
                 </Link>
@@ -171,7 +163,7 @@ export default function MyBookings() {
                     type="button"
                     disabled={activeBookingId === booking.id}
                     onClick={() => handleCancel(booking.id)}
-                    className="inline-flex min-w-40 justify-center rounded-xl bg-rose-600 px-6 py-3 text-white transition hover:bg-rose-700 disabled:bg-rose-300"
+                    className="inline-flex min-w-40 justify-center rounded-xl bg-rose-600 px-6 py-3 font-semibold text-white transition hover:bg-rose-700 disabled:bg-rose-300"
                   >
                     {activeBookingId === booking.id ? "Cancelling..." : "Cancel Booking"}
                   </button>

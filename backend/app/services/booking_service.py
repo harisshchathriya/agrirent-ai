@@ -1,6 +1,7 @@
 from datetime import date
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
@@ -28,27 +29,36 @@ def create_booking(
         .first()
     )
 
-    # Equipment not found
     if equipment is None:
-        return None
+        raise HTTPException(
+            status_code=404,
+            detail="Equipment not found.",
+        )
 
-    # Equipment unavailable
     if not equipment.availability:
-        return None
+        raise HTTPException(
+            status_code=409,
+            detail="This equipment is currently unavailable for booking.",
+        )
 
-    # Cannot rent own equipment
     if equipment.owner_id == current_user.id:
-        return None
+        raise HTTPException(
+            status_code=403,
+            detail="You cannot book your own equipment.",
+        )
 
-    # Past date
     if booking.start_date < date.today():
-        return None
+        raise HTTPException(
+            status_code=422,
+            detail="Start date cannot be in the past.",
+        )
 
-    # Invalid date range
-    if booking.end_date < booking.start_date:
-        return None
+    if booking.end_date <= booking.start_date:
+        raise HTTPException(
+            status_code=422,
+            detail="End date must be after the start date.",
+        )
 
-    # Prevent overlapping bookings
     existing_booking = (
         db.query(Booking)
         .filter(
@@ -68,7 +78,10 @@ def create_booking(
     )
 
     if existing_booking:
-        return None
+        raise HTTPException(
+            status_code=409,
+            detail="Selected dates overlap with an existing booking for this equipment.",
+        )
 
     # Calculate total price
     days = (booking.end_date - booking.start_date).days + 1
@@ -120,7 +133,19 @@ def update_booking_status(
     booking: Booking,
     status: BookingStatusUpdate,
 ):
-    booking.status = BookingStatus(status.status)
+    if status.status != BookingStatus.CANCELLED:
+        raise HTTPException(
+            status_code=422,
+            detail="Renters can only cancel their own bookings.",
+        )
+
+    if booking.status != BookingStatus.PENDING:
+        raise HTTPException(
+            status_code=409,
+            detail="Only pending bookings can be cancelled by the renter.",
+        )
+
+    booking.status = BookingStatus.CANCELLED
     db.commit()
     db.refresh(booking)
     return booking
@@ -200,6 +225,12 @@ def approve_booking(
     db: Session,
     booking: Booking,
 ):
+    if booking.status != BookingStatus.PENDING:
+        raise HTTPException(
+            status_code=409,
+            detail="Only pending bookings can be approved.",
+        )
+
     booking.status = BookingStatus.APPROVED
 
     equipment = (
@@ -222,6 +253,12 @@ def reject_booking(
     db: Session,
     booking: Booking,
 ):
+    if booking.status != BookingStatus.PENDING:
+        raise HTTPException(
+            status_code=409,
+            detail="Only pending bookings can be rejected.",
+        )
+
     booking.status = BookingStatus.REJECTED
     db.commit()
     db.refresh(booking)
@@ -235,9 +272,11 @@ def complete_booking(
     db: Session,
     booking: Booking,
 ):
-    # Only approved bookings can be completed
     if booking.status != BookingStatus.APPROVED:
-        return None
+        raise HTTPException(
+            status_code=409,
+            detail="Only approved bookings can be completed.",
+        )
 
     booking.status = BookingStatus.COMPLETED
 
@@ -261,9 +300,14 @@ def cancel_booking(
     db: Session,
     booking: Booking,
 ):
-    # Completed bookings cannot be cancelled
-    if booking.status == BookingStatus.COMPLETED:
-        return None
+    if booking.status not in {
+        BookingStatus.PENDING,
+        BookingStatus.APPROVED,
+    }:
+        raise HTTPException(
+            status_code=409,
+            detail="Only pending or approved bookings can be cancelled.",
+        )
 
     booking.status = BookingStatus.CANCELLED
 

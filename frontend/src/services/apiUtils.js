@@ -1,6 +1,10 @@
 export function getErrorMessage(error, fallbackMessage) {
+  const detail = error?.response?.data?.detail;
+
   return (
-    error?.response?.data?.detail ||
+    (Array.isArray(detail)
+      ? detail.map((item) => item?.msg || item).join(", ")
+      : detail) ||
     error?.message ||
     fallbackMessage
   );
