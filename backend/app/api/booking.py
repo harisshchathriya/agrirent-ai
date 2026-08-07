@@ -64,32 +64,6 @@ def read_bookings(
 
 
 # ---------------------------------------------------
-# GET BOOKING BY ID
-# ---------------------------------------------------
-@router.get(
-    "/{booking_id}",
-    response_model=BookingResponse,
-)
-def read_booking(
-    booking_id: UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    booking = get_booking_by_id(db, booking_id)
-    if booking is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Booking not found.",
-        )
-    if booking.renter_id != current_user.id and not is_equipment_owner(db, booking, current_user):
-        raise HTTPException(
-            status_code=403,
-            detail="You are not allowed to view this booking.",
-        )
-    return booking
-
-
-# ---------------------------------------------------
 # UPDATE STATUS
 # ---------------------------------------------------
 @router.put(
@@ -278,3 +252,30 @@ def owner_cancel_booking(
         )
 
     return cancel_booking(db, booking)
+
+
+# ---------------------------------------------------
+# GET BOOKING BY ID
+# ---------------------------------------------------
+# Keep this parameterized route after the fixed owner routes.
+@router.get(
+    "/{booking_id}",
+    response_model=BookingResponse,
+)
+def read_booking(
+    booking_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    booking = get_booking_by_id(db, booking_id)
+    if booking is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Booking not found.",
+        )
+    if booking.renter_id != current_user.id and not is_equipment_owner(db, booking, current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to view this booking.",
+        )
+    return booking

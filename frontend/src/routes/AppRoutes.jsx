@@ -21,6 +21,7 @@ import AddEquipment from "../pages/equipment/AddEquipment";
 import MyBookings from "../pages/bookings/MyBookings";
 import OwnerBookings from "../pages/bookings/OwnerBookings";
 import CreateBooking from "../pages/bookings/CreateBooking";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRoutes() {
   return (
@@ -35,7 +36,7 @@ export default function AppRoutes() {
 
         <Route
           path="/login"
-          element={<Navigate to="/" replace />}
+          element={<Login />}
         />
 
         <Route
@@ -46,7 +47,11 @@ export default function AppRoutes() {
         {/* Dashboard */}
         <Route
           path="/dashboard"
-          element={<Dashboard />}
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
         />
 
         {/* Equipment */}
@@ -64,25 +69,41 @@ export default function AppRoutes() {
         {/* Add Equipment */}
         <Route
           path="/equipment/add"
-          element={<AddEquipment />}
+          element={
+            <ProtectedRoute>
+              <AddEquipment />
+            </ProtectedRoute>
+          }
         />
 
         {/* Farmer Bookings */}
         <Route
           path="/bookings"
-          element={<MyBookings />}
+          element={
+            <ProtectedRoute>
+              <MyBookings />
+            </ProtectedRoute>
+          }
         />
 
         {/* Create Booking */}
         <Route
           path="/bookings/create/:id"
-          element={<CreateBooking />}
+          element={
+            <ProtectedRoute>
+              <CreateBooking />
+            </ProtectedRoute>
+          }
         />
 
         {/* Owner Panel */}
         <Route
           path="/owner"
-          element={<OwnerBookings />}
+          element={
+            <ProtectedRoute>
+              <OwnerBookings />
+            </ProtectedRoute>
+          }
         />
 
         <Route
