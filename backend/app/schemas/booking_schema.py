@@ -26,6 +26,8 @@ class BookingResponse(BaseModel):
     farmer_id: UUID
     renter_id: UUID
     renter_name: str | None = None
+    owner_name: str | None = None
+    owner_email: str | None = None
 
     equipment_name: str
     category: str

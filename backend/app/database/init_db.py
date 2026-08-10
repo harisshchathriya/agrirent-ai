@@ -6,6 +6,8 @@ from app.models import (
     User,
     Equipment,
     Booking,
+    EquipmentImage,
+    Review,
 )
 
 print("Creating database tables...")

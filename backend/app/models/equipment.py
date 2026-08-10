@@ -77,6 +77,16 @@ class Equipment(Base):
         "Booking",
         back_populates="equipment",
     )
+    images: Mapped[list["EquipmentImage"]] = relationship(
+        "EquipmentImage",
+        back_populates="equipment",
+        cascade="all, delete-orphan",
+    )
+    reviews: Mapped[list["Review"]] = relationship(
+        "Review",
+        back_populates="equipment",
+        cascade="all, delete-orphan",
+    )
 
     @property
     def owner_name(self):

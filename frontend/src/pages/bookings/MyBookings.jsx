@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaCalendarAlt, FaMapMarkerAlt, FaTractor } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaTractor,
+  FaUser,
+} from "react-icons/fa";
 import EmptyState from "../../components/EmptyState";
 import ErrorState from "../../components/ErrorState";
 import LoadingState from "../../components/LoadingState";
@@ -149,6 +155,41 @@ export default function MyBookings() {
                   </div>
                 </div>
               </div>
+
+              {booking.owner_name || booking.owner_email ? (
+                <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4">
+                  <p className="text-sm font-semibold text-emerald-800">
+                    Equipment Owner
+                  </p>
+
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {booking.owner_name ? (
+                      <div className="flex items-center gap-3 text-slate-700">
+                        <FaUser className="text-emerald-700" />
+                        <div>
+                          <p className="text-sm text-slate-500">Owner</p>
+                          <p className="font-semibold">{booking.owner_name}</p>
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {booking.owner_email ? (
+                      <div className="flex items-center gap-3 text-slate-700">
+                        <FaEnvelope className="text-emerald-700" />
+                        <div>
+                          <p className="text-sm text-slate-500">Owner Email</p>
+                          <a
+                            href={`mailto:${booking.owner_email}`}
+                            className="font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
+                          >
+                            {booking.owner_email}
+                          </a>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link

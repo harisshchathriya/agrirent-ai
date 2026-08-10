@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy import and_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.booking import Booking, BookingStatus
 from app.models.equipment import Equipment
@@ -98,9 +98,8 @@ def create_booking(
 
     db.add(new_booking)
     db.commit()
-    db.refresh(new_booking)
 
-    return new_booking
+    return get_booking_by_id(db, new_booking.id)
 
 
 # ---------------------------------------------------
@@ -112,6 +111,14 @@ def get_all_bookings(
 ):
     return (
         db.query(Booking)
+        .options(
+            joinedload(Booking.renter).load_only(User.id, User.name),
+            joinedload(Booking.equipment).joinedload(Equipment.owner).load_only(
+                User.id,
+                User.name,
+                User.email,
+            ),
+        )
         .filter(Booking.renter_id == current_user.id)
         .all()
     )
@@ -123,6 +130,14 @@ def get_booking_by_id(
 ):
     return (
         db.query(Booking)
+        .options(
+            joinedload(Booking.renter).load_only(User.id, User.name),
+            joinedload(Booking.equipment).joinedload(Equipment.owner).load_only(
+                User.id,
+                User.name,
+                User.email,
+            ),
+        )
         .filter(Booking.id == booking_id)
         .first()
     )
@@ -147,8 +162,7 @@ def update_booking_status(
 
     booking.status = BookingStatus.CANCELLED
     db.commit()
-    db.refresh(booking)
-    return booking
+    return get_booking_by_id(db, booking.id)
 
 
 def delete_booking(
@@ -168,6 +182,14 @@ def get_owner_bookings(
 ):
     return (
         db.query(Booking)
+        .options(
+            joinedload(Booking.renter).load_only(User.id, User.name),
+            joinedload(Booking.equipment).joinedload(Equipment.owner).load_only(
+                User.id,
+                User.name,
+                User.email,
+            ),
+        )
         .join(Equipment, Booking.equipment_id == Equipment.id)
         .filter(Equipment.owner_id == owner.id)
         .all()
@@ -180,6 +202,14 @@ def get_pending_owner_bookings(
 ):
     return (
         db.query(Booking)
+        .options(
+            joinedload(Booking.renter).load_only(User.id, User.name),
+            joinedload(Booking.equipment).joinedload(Equipment.owner).load_only(
+                User.id,
+                User.name,
+                User.email,
+            ),
+        )
         .join(Equipment, Booking.equipment_id == Equipment.id)
         .filter(
             Equipment.owner_id == owner.id,
@@ -242,8 +272,7 @@ def approve_booking(
         equipment.availability = False
 
     db.commit()
-    db.refresh(booking)
-    return booking
+    return get_booking_by_id(db, booking.id)
 
 
 # ---------------------------------------------------
@@ -261,8 +290,7 @@ def reject_booking(
 
     booking.status = BookingStatus.REJECTED
     db.commit()
-    db.refresh(booking)
-    return booking
+    return get_booking_by_id(db, booking.id)
 
 
 # ---------------------------------------------------
@@ -289,8 +317,7 @@ def complete_booking(
         equipment.availability = True
 
     db.commit()
-    db.refresh(booking)
-    return booking
+    return get_booking_by_id(db, booking.id)
 
 
 # ---------------------------------------------------
@@ -320,5 +347,4 @@ def cancel_booking(
         equipment.availability = True
 
     db.commit()
-    db.refresh(booking)
-    return booking
+    return get_booking_by_id(db, booking.id)

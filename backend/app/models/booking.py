@@ -97,3 +97,11 @@ class Booking(Base):
     @property
     def renter_name(self):
         return self.renter.name
+
+    @property
+    def owner_name(self):
+        return self.equipment.owner.name
+
+    @property
+    def owner_email(self):
+        return self.equipment.owner.email

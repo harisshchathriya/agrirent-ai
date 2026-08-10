@@ -59,3 +59,7 @@ class User(Base):
         "Booking",
         back_populates="renter",
     )
+    reviews: Mapped[list["Review"]] = relationship(
+        "Review",
+        back_populates="user",
+    )

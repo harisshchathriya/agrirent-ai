@@ -41,6 +41,14 @@ This project is built as an MVP for college capstone Review-I to demonstrate the
 
 - PostgreSQL
 
+The Review-I MVP database contains five related tables:
+
+- Users
+- Equipment
+- Bookings
+- Equipment Images
+- Reviews
+
 ## Project Structure
 
 ```text
@@ -84,7 +92,7 @@ agrirent-ai
 
 ## Database ER Diagram
 
-![ER Diagram](docs/diagrams/ER_Diagram.png)
+![ER Diagram](docs/diagrams/ER_Diagram.svg)
 
 ## Module Diagram
 
@@ -156,6 +164,8 @@ Copy-Item ..\.env.example .env
 cp ../.env.example .env
 
 pip install -r requirements.txt
+# Create any missing database tables (safe for the two new Review-I tables).
+python -m app.database.init_db
 uvicorn app.main:app --reload
 ```
 
@@ -195,7 +205,6 @@ The backend requires:
 - Equipment image upload
 - Google Maps integration
 - Weather API
-- Ratings and reviews
 - Payment gateway
 - Real-time notifications
 - Analytics dashboard
