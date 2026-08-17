@@ -9,11 +9,11 @@ from app.core.security import (
 )
 
 
-def get_user_by_email(db: Session, email: str):
+def get_user_by_email(db: Session, email: str) -> User | None:
     return db.query(User).filter(User.email == email).first()
 
 
-def register_user(db: Session, user: UserCreate):
+def register_user(db: Session, user: UserCreate) -> User | None:
 
     existing_user = get_user_by_email(db, user.email)
 
@@ -35,7 +35,7 @@ def register_user(db: Session, user: UserCreate):
     return new_user
 
 
-def login_user(db: Session, email: str, password: str):
+def login_user(db: Session, email: str, password: str) -> str | None:
 
     user = get_user_by_email(db, email)
 
