@@ -199,6 +199,25 @@ The backend requires:
 - `ALGORITHM`
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
 
+## Continuous Integration
+
+GitHub Actions runs validation on pushes to `main` and on pull requests targeting `main`.
+The backend job runs the pytest suite, while the frontend job installs dependencies with
+`npm ci`, runs ESLint, and creates a production build with Vite. Any test, lint, or build
+failure returns a non-zero exit code and fails the workflow.
+
+Run the same checks locally before opening a pull request:
+
+```bash
+cd backend
+pytest -v
+
+cd ../frontend
+npm ci
+npm run lint
+npm run build
+```
+
 ## Future Enhancements
 
 - AI equipment recommendation
