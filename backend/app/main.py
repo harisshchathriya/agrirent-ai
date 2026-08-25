@@ -5,6 +5,7 @@ from app.api.auth import router as auth_router
 from app.api.equipment import router as equipment_router
 from app.api.booking import router as booking_router
 from app.api.equipment_relations import router as equipment_relations_router
+from app.core.config import FRONTEND_URL
 
 app = FastAPI(
     title="AgriRent AI",
@@ -17,7 +18,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
+        FRONTEND_URL,
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -32,6 +33,11 @@ def root():
     return {
         "message": "Welcome to AgriRent AI"
     }
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
 # ----------------------------
 # API Routes

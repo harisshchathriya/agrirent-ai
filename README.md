@@ -198,6 +198,41 @@ The backend requires:
 - `SECRET_KEY`
 - `ALGORITHM`
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `FRONTEND_URL` (defaults to `http://localhost:5173` for local development)
+
+The frontend reads its API base URL from `VITE_API_URL`. For local development, copy
+`frontend/.env.example` to `frontend/.env` or use the built-in local fallback.
+
+## Deployment
+
+This project is prepared for a later cloud deployment but is not deployed yet. The
+intended architecture is a Vercel or Netlify frontend, a Render or Railway FastAPI
+backend, and a cloud PostgreSQL database.
+
+Configure these backend environment variables in the hosting platform; never commit
+their real values:
+
+- `DATABASE_URL` — cloud PostgreSQL SQLAlchemy connection string
+- `SECRET_KEY` — long random JWT signing secret
+- `ALGORITHM` — JWT algorithm (currently `HS256`)
+- `ACCESS_TOKEN_EXPIRE_MINUTES` — JWT lifetime in minutes
+- `FRONTEND_URL` — deployed frontend origin, for example `https://<frontend-domain>`
+
+Configure `VITE_API_URL` in the frontend hosting platform to the deployed backend
+origin, for example `https://<backend-domain>`. Vite embeds this build-time value in
+the frontend bundle, so it must be set before each production build.
+
+The backend exposes `GET /health` for platform health checks. Start the backend from
+the `backend` directory with:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+On Windows PowerShell, set the port first (for example,
+`$env:PORT=8000`) and run `uvicorn app.main:app --host 0.0.0.0 --port $env:PORT`.
+The database tables are initialized manually with `python -m app.database.init_db`;
+the deployed service must receive its cloud `DATABASE_URL` before that command runs.
 
 ## Continuous Integration
 

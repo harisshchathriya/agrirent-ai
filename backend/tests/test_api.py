@@ -56,6 +56,15 @@ def client():
     app.dependency_overrides.clear()
 
 
+def test_health_check_returns_ok(client):
+    test_client, _ = client
+
+    response = test_client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 @pytest.fixture
 def authenticated_client(client):
     test_client, db = client
