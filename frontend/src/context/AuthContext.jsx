@@ -57,6 +57,8 @@ export function AuthProvider({ children }) {
     };
   }, [token]);
 
+  const userRole = currentUser?.role || null;
+
   return (
     <AuthContext.Provider
       value={{
@@ -66,6 +68,9 @@ export function AuthProvider({ children }) {
         login,
         logout,
         isAuthenticated: !!token,
+        userRole,
+        isOwner: userRole === "owner",
+        isFarmer: userRole === "farmer",
       }}
     >
       {children}

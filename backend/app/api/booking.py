@@ -23,9 +23,10 @@ from app.services.booking_service import (
     get_pending_owner_bookings,
     approve_booking,
     reject_booking,
-    complete_booking,      # <-- added
-    cancel_booking,        # <-- added
+    complete_booking,
+    cancel_booking,
     is_equipment_owner,
+    require_owner_role,
 )
 
 router = APIRouter(
@@ -131,6 +132,7 @@ def owner_bookings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_owner_role(current_user)
     return get_owner_bookings(db, current_user)
 
 
@@ -145,6 +147,7 @@ def owner_pending_bookings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_owner_role(current_user)
     return get_pending_owner_bookings(db, current_user)
 
 
@@ -160,6 +163,7 @@ def owner_approve_booking(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_owner_role(current_user)
     booking = get_booking_by_id(db, booking_id)
     if booking is None:
         raise HTTPException(
@@ -186,6 +190,7 @@ def owner_reject_booking(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_owner_role(current_user)
     booking = get_booking_by_id(db, booking_id)
     if booking is None:
         raise HTTPException(
@@ -212,6 +217,7 @@ def owner_complete_booking(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_owner_role(current_user)
     booking = get_booking_by_id(db, booking_id)
     if booking is None:
         raise HTTPException(
@@ -239,6 +245,7 @@ def owner_cancel_booking(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_owner_role(current_user)
     booking = get_booking_by_id(db, booking_id)
     if booking is None:
         raise HTTPException(

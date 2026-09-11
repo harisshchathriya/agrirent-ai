@@ -21,7 +21,7 @@ import AddEquipment from "../pages/equipment/AddEquipment";
 import MyBookings from "../pages/bookings/MyBookings";
 import OwnerBookings from "../pages/bookings/OwnerBookings";
 import CreateBooking from "../pages/bookings/CreateBooking";
-import ProtectedRoute from "./ProtectedRoute";
+import ProtectedRoute, { RoleProtectedRoute } from "./ProtectedRoute";
 
 export default function AppRoutes() {
   return (
@@ -100,9 +100,9 @@ export default function AppRoutes() {
         <Route
           path="/owner"
           element={
-            <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={["owner"]} redirectTo="/dashboard">
               <OwnerBookings />
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           }
         />
 

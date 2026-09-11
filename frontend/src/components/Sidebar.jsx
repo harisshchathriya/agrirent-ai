@@ -10,8 +10,9 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 
 export default function Sidebar() {
-  const { logout } = useContext(AuthContext);
+  const { logout, currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const isOwner = currentUser?.role === "owner";
 
   function handleLogout() {
     logout();
@@ -47,10 +48,12 @@ export default function Sidebar() {
           My Bookings
         </NavLink>
 
-        <NavLink to="/owner" className={linkClass}>
-          <FaUserCog />
-          Owner Panel
-        </NavLink>
+        {isOwner ? (
+          <NavLink to="/owner" className={linkClass}>
+            <FaUserCog />
+            Owner Panel
+          </NavLink>
+        ) : null}
 
         <button
           type="button"

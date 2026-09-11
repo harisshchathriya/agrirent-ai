@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.models.booking import Booking, BookingStatus
 from app.models.equipment import Equipment
-from app.models.user import User
+from app.models.user import User, UserRole
 
 from app.schemas.booking_schema import (
     BookingCreate,
@@ -176,10 +176,20 @@ def delete_booking(
 # ---------------------------------------------------
 # OWNER FUNCTIONS
 # ---------------------------------------------------
+def require_owner_role(current_user: User):
+    role_value = getattr(current_user.role, "value", current_user.role)
+    if role_value != UserRole.OWNER.value:
+        raise HTTPException(
+            status_code=403,
+            detail="Only owners can access owner bookings.",
+        )
+
+
 def get_owner_bookings(
     db: Session,
     owner: User,
 ):
+    require_owner_role(owner)
     return (
         db.query(Booking)
         .options(
@@ -200,6 +210,7 @@ def get_pending_owner_bookings(
     db: Session,
     owner: User,
 ):
+    require_owner_role(owner)
     return (
         db.query(Booking)
         .options(

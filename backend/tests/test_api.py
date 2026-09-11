@@ -289,7 +289,8 @@ def test_read_booking_handles_not_found_and_unauthorized(authenticated_client, m
 
 
 def test_owner_approval_authorizes_owner_and_rejects_non_owner(authenticated_client, monkeypatch):
-    test_client, db, _ = authenticated_client
+    test_client, db, user = authenticated_client
+    user.role = "owner"
     booking = make_booking()
     approved = make_booking(booking.renter_id, booking.equipment_id, "approved")
     approved.id = booking.id
@@ -307,6 +308,75 @@ def test_owner_approval_authorizes_owner_and_rejects_non_owner(authenticated_cli
     assert allowed.json()["status"] == "approved"
     service.assert_called_once_with(db, booking)
     assert denied.status_code == 403
+
+
+def test_owner_bookings_requires_authentication(client):
+    test_client, _ = client
+
+    response = test_client.get("/bookings/owner/bookings")
+
+    assert response.status_code == 401
+
+
+def test_owner_bookings_requires_owner_role(authenticated_client, monkeypatch):
+    test_client, db, user = authenticated_client
+    user.role = "farmer"
+    service = MagicMock(return_value=[])
+    monkeypatch.setattr(booking_api, "get_owner_bookings", service)
+
+    response = test_client.get("/bookings/owner/bookings")
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Only owners can access owner bookings."
+    service.assert_not_called()
+
+
+def test_owner_can_retrieve_owner_bookings(authenticated_client, monkeypatch):
+    test_client, db, user = authenticated_client
+    user.role = "owner"
+    booking = make_booking(renter_id=uuid4())
+    service = MagicMock(return_value=[booking])
+    monkeypatch.setattr(booking_api, "get_owner_bookings", service)
+
+    response = test_client.get("/bookings/owner/bookings")
+
+    assert response.status_code == 200
+    assert response.json()[0]["id"] == str(booking.id)
+    service.assert_called_once_with(db, user)
+
+
+@pytest.mark.parametrize(
+    "path, action",
+    [
+        ("/bookings/owner/bookings/1/approve", "approve"),
+        ("/bookings/owner/bookings/1/reject", "reject"),
+        ("/bookings/owner/bookings/1/complete", "complete"),
+        ("/bookings/owner/bookings/1/cancel", "cancel"),
+    ],
+)
+def test_farmer_cannot_mutate_owner_bookings(authenticated_client, monkeypatch, path, action):
+    test_client, _, user = authenticated_client
+    user.role = "farmer"
+    booking_id = uuid4()
+    monkeypatch.setattr(booking_api, "get_booking_by_id", MagicMock(return_value=make_booking(equipment_id=uuid4())))
+    monkeypatch.setattr(booking_api, "approve_booking", MagicMock())
+    monkeypatch.setattr(booking_api, "reject_booking", MagicMock())
+    monkeypatch.setattr(booking_api, "complete_booking", MagicMock())
+    monkeypatch.setattr(booking_api, "cancel_booking", MagicMock())
+
+    if "approve" in path:
+        booking_id = uuid4()
+    elif "reject" in path:
+        booking_id = uuid4()
+    elif "complete" in path:
+        booking_id = uuid4()
+    else:
+        booking_id = uuid4()
+
+    response = test_client.put(path.replace("1", str(booking_id)))
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Only owners can access owner bookings."
 
 
 def test_read_images_returns_service_response(client, monkeypatch):
