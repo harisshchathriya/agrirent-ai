@@ -70,9 +70,9 @@ export default function AppRoutes() {
         <Route
           path="/equipment/add"
           element={
-            <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={["owner"]}>
               <AddEquipment />
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           }
         />
 

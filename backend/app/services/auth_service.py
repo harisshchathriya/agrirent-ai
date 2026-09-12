@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user_schema import UserCreate
 from app.core.security import (
     hash_password,
@@ -25,7 +25,7 @@ def register_user(db: Session, user: UserCreate) -> User | None:
         email=user.email,
         hashed_password=hash_password(user.password),
         phone=user.phone,
-        role=user.role,
+        role=UserRole.FARMER,
     )
 
     db.add(new_user)

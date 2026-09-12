@@ -87,6 +87,7 @@ def test_register_success_returns_public_user_response(client, monkeypatch):
     assert response.json()["email"] == "user@example.com"
     assert "hashed_password" not in response.json()
     assert service.call_args.args[0] is db
+    assert not hasattr(service.call_args.args[1], "role")
 
 
 def test_register_rejects_invalid_body_before_service(client, monkeypatch):
@@ -153,6 +154,7 @@ def test_current_user_returns_authenticated_user(authenticated_client):
 
 def test_create_equipment_success_calls_service(authenticated_client, monkeypatch):
     test_client, db, user = authenticated_client
+    user.role = "owner"
     service = MagicMock(return_value=make_equipment(user.id))
     monkeypatch.setattr(equipment_api, "create_equipment", service)
     payload = {"name": "Tractor", "category": "Tractor", "description": "Reliable tractor", "price_per_day": 2500, "location": "Trichy"}
@@ -163,6 +165,26 @@ def test_create_equipment_success_calls_service(authenticated_client, monkeypatc
     assert response.json()["owner_id"] == str(user.id)
     assert service.call_args.args[0] is db
     assert service.call_args.args[2] is user
+
+
+def test_create_equipment_rejects_non_owner(authenticated_client, monkeypatch):
+    test_client, _, _ = authenticated_client
+    service = MagicMock()
+    monkeypatch.setattr(equipment_api, "create_equipment", service)
+
+    payload = {
+        "name": "Tractor",
+        "category": "Tractor",
+        "description": "Reliable tractor",
+        "price_per_day": 2500,
+        "location": "Trichy",
+    }
+
+    response = test_client.post("/equipment", json=payload)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Only owners can create equipment."
+    service.assert_not_called()
 
 
 def test_create_equipment_requires_authentication(client):

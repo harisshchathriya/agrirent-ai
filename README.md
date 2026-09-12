@@ -6,7 +6,7 @@ Agricultural Equipment Rental Platform
 
 AgriRent AI is a full-stack web application that connects farmers with equipment owners through a secure online rental platform. Users can register, log in, browse available agricultural equipment, view equipment details, create bookings, and manage rentals. Equipment owners can review incoming booking requests and approve, reject, complete, or cancel bookings.
 
-This project is built as an MVP for college capstone Review-I to demonstrate the core application flow end-to-end.
+This project is built as an MVP for college capstone Review-II to demonstrate the core application flow end-to-end.
 
 ## Features
 
@@ -19,6 +19,7 @@ This project is built as an MVP for college capstone Review-I to demonstrate the
 - Booking validation with friendly error messages
 - Responsive frontend UI
 - PostgreSQL database integration
+- Role-based access for farmers, equipment owners, and administrators
 
 ## Tech Stack
 
@@ -164,7 +165,7 @@ Copy-Item ..\.env.example .env
 cp ../.env.example .env
 
 pip install -r requirements.txt
-# Create any missing database tables (safe for the two new Review-I tables).
+# Create any missing database tables.
 python -m app.database.init_db
 uvicorn app.main:app --reload
 ```
@@ -203,11 +204,19 @@ The backend requires:
 The frontend reads its API base URL from `VITE_API_URL`. For local development, copy
 `frontend/.env.example` to `frontend/.env` or use the built-in local fallback.
 
+## API Documentation
+
+- Swagger UI: https://agrirent-ai-backend-yrxg.onrender.com/docs
+- OpenAPI JSON: https://agrirent-ai-backend-yrxg.onrender.com/openapi.json
+- Health check: https://agrirent-ai-backend-yrxg.onrender.com/health
+
 ## Deployment
 
-This project is prepared for a later cloud deployment but is not deployed yet. The
-intended architecture is a Vercel or Netlify frontend, a Render or Railway FastAPI
-backend, and a cloud PostgreSQL database.
+The Review-II deployment uses Vercel for the frontend, Render for the FastAPI
+backend, and Render PostgreSQL for persistence.
+
+- Frontend: https://agrirent-ai-teal.vercel.app
+- Backend: https://agrirent-ai-backend-yrxg.onrender.com
 
 Configure these backend environment variables in the hosting platform; never commit
 their real values:
@@ -216,10 +225,10 @@ their real values:
 - `SECRET_KEY` — long random JWT signing secret
 - `ALGORITHM` — JWT algorithm (currently `HS256`)
 - `ACCESS_TOKEN_EXPIRE_MINUTES` — JWT lifetime in minutes
-- `FRONTEND_URL` — deployed frontend origin, for example `https://<frontend-domain>`
+- `FRONTEND_URL` — `https://agrirent-ai-teal.vercel.app`
 
-Configure `VITE_API_URL` in the frontend hosting platform to the deployed backend
-origin, for example `https://<backend-domain>`. Vite embeds this build-time value in
+Configure `VITE_API_URL` in the frontend hosting platform as
+`https://agrirent-ai-backend-yrxg.onrender.com`. Vite embeds this build-time value in
 the frontend bundle, so it must be set before each production build.
 
 The backend exposes `GET /health` for platform health checks. Start the backend from
@@ -237,15 +246,16 @@ the deployed service must receive its cloud `DATABASE_URL` before that command r
 ## Continuous Integration
 
 GitHub Actions runs validation on pushes to `main` and on pull requests targeting `main`.
-The backend job runs the pytest suite, while the frontend job installs dependencies with
-`npm ci`, runs ESLint, and creates a production build with Vite. Any test, lint, or build
-failure returns a non-zero exit code and fails the workflow.
+The backend job runs the pytest suite with coverage enforcement, while the frontend job
+installs dependencies with `npm ci`, runs ESLint, and creates a production build with
+Vite. Any test, coverage, lint, or build failure returns a non-zero exit code and fails
+the workflow.
 
 Run the same checks locally before opening a pull request:
 
 ```bash
 cd backend
-pytest -v
+pytest -v --cov=app --cov-report=term-missing --cov-fail-under=40
 
 cd ../frontend
 npm ci
@@ -253,13 +263,18 @@ npm run lint
 npm run build
 ```
 
-## Future Enhancements
+## Scope and Future Enhancements
+
+The current MVP scope is registration, login, JWT authentication, equipment browsing
+and creation, booking creation, renter bookings, owner booking management, validation,
+and PostgreSQL persistence. Ratings/reviews, notifications, payments, maps, weather,
+AI recommendations, and analytics are outside the current Problem Statement scope.
 
 - AI equipment recommendation
-- Equipment image upload
 - Google Maps integration
 - Weather API
 - Payment gateway
+- Ratings and reviews
 - Real-time notifications
 - Analytics dashboard
 

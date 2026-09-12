@@ -34,7 +34,6 @@ def test_register_user_creates_new_user():
         email="farmer@example.com",
         password="password123",
         phone="9876543210",
-        role="farmer",
     )
 
     with patch(
@@ -73,7 +72,6 @@ def test_register_user_returns_none_for_existing_email():
         email="farmer@example.com",
         password="password123",
         phone="9876543210",
-        role="farmer",
     )
 
     result = auth_service.register_user(db, user_data)

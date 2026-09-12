@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import DashboardCard from "../../components/DashboardCard";
 import ErrorState from "../../components/ErrorState";
 import LoadingState from "../../components/LoadingState";
@@ -9,42 +9,47 @@ import {
   getOwnerBookings,
 } from "../../services/bookingService";
 import { getEquipment } from "../../services/equipmentService";
+import { AuthContext } from "../../context/authContext";
 
 export default function Dashboard() {
+  const { currentUser } = useContext(AuthContext);
   const [equipment, setEquipment] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [ownerBookings, setOwnerBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    async function loadDashboardData() {
+      setLoading(true);
+      setError("");
 
-  async function loadDashboardData() {
-    setLoading(true);
-    setError("");
+      try {
+        const [
+          equipmentData,
+          myBookingsData,
+          ownerBookingsData,
+        ] = await Promise.all([
+          getEquipment(),
+          getMyBookings(),
+          currentUser?.role === "owner"
+            ? getOwnerBookings()
+            : Promise.resolve([]),
+        ]);
 
-    try {
-      const [
-        equipmentData,
-        myBookingsData,
-        ownerBookingsData,
-      ] = await Promise.all([
-        getEquipment(),
-        getMyBookings(),
-        getOwnerBookings(),
-      ]);
-
-      setEquipment(equipmentData);
-      setMyBookings(myBookingsData);
-      setOwnerBookings(ownerBookingsData);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
+        setEquipment(equipmentData);
+        setMyBookings(myBookingsData);
+        setOwnerBookings(ownerBookingsData);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+
+    loadDashboardData();
+  }, [currentUser?.role, reloadToken]);
 
   const combinedBookings = Array.from(
     new Map(
@@ -81,7 +86,7 @@ export default function Dashboard() {
         <ErrorState
           title="Unable to load dashboard"
           message={error}
-          onRetry={loadDashboardData}
+          onRetry={() => setReloadToken((token) => token + 1)}
         />
       ) : (
         <>

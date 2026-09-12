@@ -14,7 +14,6 @@ export default function Register() {
     email: "",
     password: "",
     phone: "",
-    role: "farmer",
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -85,16 +84,6 @@ export default function Register() {
             className="w-full rounded-xl border border-slate-200 p-3"
             required
           />
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            className="w-full rounded-xl border border-slate-200 p-3"
-          >
-            <option value="farmer">Farmer</option>
-            <option value="owner">Owner</option>
-            <option value="admin">Admin</option>
-          </select>
         </div>
 
         <input
