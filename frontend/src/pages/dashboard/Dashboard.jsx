@@ -12,36 +12,69 @@ import { getEquipment } from "../../services/equipmentService";
 import { AuthContext } from "../../context/authContext";
 
 export default function Dashboard() {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, authLoading } = useContext(AuthContext);
   const [equipment, setEquipment] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [ownerBookings, setOwnerBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [errorTitle, setErrorTitle] = useState("Unable to load dashboard");
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     async function loadDashboardData() {
+      if (authLoading || !currentUser) {
+        setLoading(authLoading);
+        return;
+      }
+
       setLoading(true);
       setError("");
+      setErrorTitle("Unable to load dashboard");
 
       try {
-        const [
-          equipmentData,
-          myBookingsData,
-          ownerBookingsData,
-        ] = await Promise.all([
-          getEquipment(),
-          getMyBookings(),
-          currentUser?.role === "owner"
-            ? getOwnerBookings()
-            : Promise.resolve([]),
+        const [equipmentData, myBookingsData] = await Promise.all([
+          getEquipment().catch((requestError) => {
+            throw new Error(
+              `Equipment data: ${requestError.message}`,
+              { cause: requestError }
+            );
+          }),
+          getMyBookings().catch((requestError) => {
+            throw new Error(
+              `Your booking data: ${requestError.message}`,
+              { cause: requestError }
+            );
+          }),
         ]);
+
+        let ownerBookingsData = [];
+
+        if (currentUser.role === "owner") {
+          try {
+            ownerBookingsData = await getOwnerBookings();
+          } catch (requestError) {
+            throw new Error(
+              `Incoming owner bookings: ${requestError.message}`,
+              { cause: requestError }
+            );
+          }
+        }
 
         setEquipment(equipmentData);
         setMyBookings(myBookingsData);
         setOwnerBookings(ownerBookingsData);
       } catch (error) {
+        const status = error.cause?.cause?.response?.status ||
+          error.cause?.response?.status;
+
+        setErrorTitle(
+          status === 401 || status === 403
+            ? "Authentication failed"
+            : error.message.startsWith("Incoming owner bookings:")
+              ? "Unable to load owner bookings"
+              : "Unable to load dashboard"
+        );
         setError(error.message);
       } finally {
         setLoading(false);
@@ -49,7 +82,7 @@ export default function Dashboard() {
     }
 
     loadDashboardData();
-  }, [currentUser?.role, reloadToken]);
+  }, [authLoading, currentUser, reloadToken]);
 
   const combinedBookings = Array.from(
     new Map(
@@ -84,7 +117,7 @@ export default function Dashboard() {
         <LoadingState message="Loading dashboard metrics..." />
       ) : error ? (
         <ErrorState
-          title="Unable to load dashboard"
+          title={errorTitle}
           message={error}
           onRetry={() => setReloadToken((token) => token + 1)}
         />
@@ -134,7 +167,9 @@ export default function Dashboard() {
                   Inventory
                 </p>
                 <p className="mt-2 text-lg font-semibold text-slate-900">
-                  {equipment.length} listings tracked
+                  {equipment.length === 0
+                    ? "No equipment listed yet"
+                    : `${equipment.length} listings tracked`}
                 </p>
               </div>
 
@@ -152,7 +187,11 @@ export default function Dashboard() {
                   Requests
                 </p>
                 <p className="mt-2 text-lg font-semibold text-slate-900">
-                  {pendingRequests} waiting for owner action
+                  {currentUser.role === "owner"
+                    ? ownerBookings.length === 0
+                      ? "No incoming bookings"
+                      : `${pendingRequests} waiting for owner action`
+                    : "Owner requests are not part of this dashboard"}
                 </p>
               </div>
 
@@ -161,7 +200,9 @@ export default function Dashboard() {
                   Rentals
                 </p>
                 <p className="mt-2 text-lg font-semibold text-slate-900">
-                  {activeBookings} active, {completedRentals} completed
+                  {combinedBookings.length === 0
+                    ? "No bookings yet"
+                    : `${activeBookings} active, ${completedRentals} completed`}
                 </p>
               </div>
             </div>
