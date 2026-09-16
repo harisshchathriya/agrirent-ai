@@ -1,23 +1,39 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "./authContext";
 import { getCurrentUser } from "../services/authService";
+import { TOKEN_STORAGE_KEY } from "../api/axios";
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(
-    localStorage.getItem("token")
+    localStorage.getItem(TOKEN_STORAGE_KEY)
   );
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(!!token);
 
-  const login = (jwtToken) => {
-    localStorage.setItem("token", jwtToken);
+  const login = async (jwtToken) => {
+    if (!jwtToken || typeof jwtToken !== "string") {
+      throw new Error("Login did not return a valid access token.");
+    }
+
+    localStorage.setItem(TOKEN_STORAGE_KEY, jwtToken);
     setCurrentUser(null);
     setAuthLoading(true);
     setToken(jwtToken);
+
+    try {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+      return user;
+    } catch (error) {
+      logout();
+      throw error;
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
     setToken(null);
     setCurrentUser(null);
     setAuthLoading(false);

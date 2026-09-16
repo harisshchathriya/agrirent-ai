@@ -36,7 +36,7 @@ export default function Register() {
         formData.email,
         formData.password
       );
-      login(auth.access_token);
+      await login(auth?.access_token);
       navigate("/dashboard");
     } catch (error) {
       setError(error.message);
