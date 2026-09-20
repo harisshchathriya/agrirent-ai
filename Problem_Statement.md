@@ -1,91 +1,65 @@
 # Problem Statement
 
-## 1. Title
+## Project Title
 
-AgriRent AI - AI-Powered Agricultural Equipment Rental & Farm Assistance Platform
+AgriRent AI
 
----
+## Problem Statement
 
-## 2. Domain
+Small and medium-scale farmers need a simple way to find and rent agricultural equipment. Equipment owners also need a controlled way to list equipment and manage rental requests. Manual coordination creates delays, booking conflicts, and poor visibility for both sides.
 
-Agriculture Technology (AgriTech)
+## Proposed Solution
 
----
+AgriRent AI is a web-based rental platform where users can register, log in, browse equipment, view equipment details, and create bookings. Equipment owners can review booking requests and update booking status through an owner panel. The platform uses JWT authentication, PostgreSQL, SQLAlchemy, and FastAPI to support the core rental workflow.
 
-## 3. Who is the User?
+## Objectives
 
-### Farmer
-- Browse agricultural equipment
-- Book equipment
-- View booking history
-- Receive equipment recommendations
+- Allow users to register and log in securely
+- Let renters browse equipment and create bookings
+- Let equipment owners manage incoming bookings
+- Prevent invalid bookings such as past dates, overlapping dates, and renting own equipment
+- Store users, equipment, and bookings in PostgreSQL
 
-### Equipment Owner
-- Register agricultural equipment
-- Manage bookings
-- Update equipment availability
+## Scope
 
-### Admin
-- Manage users
-- Manage equipment
-- Monitor bookings
-- Generate reports
+### In Scope
 
----
+- User registration and login
+- JWT authentication
+- Equipment list and equipment details
+- Add equipment
+- Booking creation
+- My bookings
+- Owner bookings
+- Booking approval, rejection, completion, and cancellation
+- Booking validation and error handling
 
-## 4. Problem Statement
+### Out of Scope
 
-Small and medium-scale farmers often face difficulties in accessing expensive agricultural machinery due to high purchasing costs and limited availability. Equipment owners struggle to reach potential customers efficiently and manage rental operations manually. This leads to underutilized machinery, scheduling conflicts, and increased farming costs.
-
----
-
-## 5. Proposed Solution
-
-Develop a web-based platform where equipment owners can list agricultural machinery for rent and farmers can search, compare, and book equipment online. The platform will include user authentication, booking management, notifications, dashboards, and AI-powered equipment recommendations based on crop type, farm size, and season.
-
----
-
-## 6. Core Database Tables
-
-- Users
-- Farmers
-- EquipmentOwners
-- Equipment
-- Categories
-- Bookings
-- Payments
-- Reviews
+- AI recommendation engine
+- Google Maps integration
+- Weather API
+- Payment gateway
+- Ratings and reviews
 - Notifications
-- Recommendations
+- Analytics dashboard
 
----
+## Technologies Used
 
-## 7. User Roles
+- Frontend: React, Vite, Tailwind CSS, Axios, React Router
+- Backend: FastAPI, SQLAlchemy, Pydantic, JWT
+- Database: PostgreSQL
 
-- Admin
-- Farmer
-- Equipment Owner
+## Expected Outcome
 
----
+The system should demonstrate a complete MVP rental flow: a user can register, log in, browse equipment, book equipment, and track bookings, while an equipment owner can approve or reject requests and manage booking status from the owner panel.
 
-## 8. Success Criteria
+## Future Enhancements
 
-- Farmers can book equipment in less than two minutes.
-- Equipment owners can manage equipment availability efficiently.
-- Admin can monitor all platform activities.
-- The platform recommends suitable equipment based on farming requirements.
-
----
-
-## 9. Out of Scope
-
-- Real online payment gateway
-- GPS tracking of machinery
-- Mobile application
-- IoT sensor integration
-
----
-
-## 10. Chosen Track
-
-Python (FastAPI)
+- AI equipment recommendations
+- Google Maps-based location search
+- Weather API integration
+- Payment gateway support
+- Ratings and reviews
+- Notifications
+- Analytics dashboard

@@ -149,6 +149,8 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
@@ -156,6 +158,12 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Local database backups and dumps
+*.dump
+*.bak
+*.backup
+*.sql
 
 # Spyder project settings
 .spyderproject
@@ -216,3 +224,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local database backup
+*.dump

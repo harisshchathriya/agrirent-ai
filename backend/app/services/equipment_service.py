@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.models.equipment import Equipment
@@ -15,7 +17,7 @@ def create_equipment(
     db: Session,
     equipment: EquipmentCreate,
     owner: User,
-):
+) -> Equipment:
     new_equipment = Equipment(
         owner_id=owner.id,
         name=equipment.name,
@@ -35,7 +37,7 @@ def create_equipment(
 # --------------------------------
 # Get All Equipment
 # --------------------------------
-def get_all_equipment(db: Session):
+def get_all_equipment(db: Session) -> list[Equipment]:
     return db.query(Equipment).all()
 
 
@@ -44,8 +46,8 @@ def get_all_equipment(db: Session):
 # --------------------------------
 def get_equipment_by_id(
     db: Session,
-    equipment_id,
-):
+    equipment_id: UUID,
+) -> Equipment | None:
     return (
         db.query(Equipment)
         .filter(Equipment.id == equipment_id)
@@ -60,7 +62,7 @@ def update_equipment(
     db: Session,
     equipment: Equipment,
     updated_data: EquipmentUpdate,
-):
+) -> Equipment:
     equipment.name = updated_data.name
     equipment.category = updated_data.category
     equipment.description = updated_data.description
@@ -79,6 +81,6 @@ def update_equipment(
 def delete_equipment(
     db: Session,
     equipment: Equipment,
-):
+) -> None:
     db.delete(equipment)
     db.commit()

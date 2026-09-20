@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -17,6 +19,8 @@ from app.services.auth_service import (
 
 from app.core.security import get_current_user
 from app.models.user import User
+
+logger = logging.getLogger("agrirent.auth")
 
 router = APIRouter(
     prefix="/auth",
@@ -38,11 +42,13 @@ def register(
     new_user = register_user(db, user)
 
     if not new_user:
+        logger.warning("Registration rejected for duplicate email: %s", user.email)
         raise HTTPException(
             status_code=400,
             detail="Email already registered",
         )
 
+    logger.info("User registered: %s", new_user.email)
     return new_user
 
 
@@ -64,11 +70,13 @@ def login(
     )
 
     if not token:
+        logger.warning("Failed login attempt for email: %s", form_data.username)
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password",
         )
 
+    logger.info("Successful login for email: %s", form_data.username)
     return {
         "access_token": token,
         "token_type": "bearer",

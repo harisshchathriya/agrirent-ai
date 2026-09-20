@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.equipment import Equipment
 
 from app.schemas.equipment_schema import (
@@ -42,6 +42,13 @@ def add_equipment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    role_value = getattr(current_user.role, "value", current_user.role)
+    if role_value != UserRole.OWNER.value:
+        raise HTTPException(
+            status_code=403,
+            detail="Only owners can create equipment.",
+        )
+
     return create_equipment(
         db,
         equipment,

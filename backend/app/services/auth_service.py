@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user_schema import UserCreate
 from app.core.security import (
     hash_password,
@@ -9,11 +9,11 @@ from app.core.security import (
 )
 
 
-def get_user_by_email(db: Session, email: str):
+def get_user_by_email(db: Session, email: str) -> User | None:
     return db.query(User).filter(User.email == email).first()
 
 
-def register_user(db: Session, user: UserCreate):
+def register_user(db: Session, user: UserCreate) -> User | None:
 
     existing_user = get_user_by_email(db, user.email)
 
@@ -25,7 +25,7 @@ def register_user(db: Session, user: UserCreate):
         email=user.email,
         hashed_password=hash_password(user.password),
         phone=user.phone,
-        role=user.role,
+        role=UserRole.FARMER,
     )
 
     db.add(new_user)
@@ -35,7 +35,7 @@ def register_user(db: Session, user: UserCreate):
     return new_user
 
 
-def login_user(db: Session, email: str, password: str):
+def login_user(db: Session, email: str, password: str) -> str | None:
 
     user = get_user_by_email(db, email)
 
