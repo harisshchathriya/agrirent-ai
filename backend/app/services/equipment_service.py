@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 
 from app.models.equipment import Equipment
 from app.models.user import User
@@ -82,5 +83,10 @@ def delete_equipment(
     db: Session,
     equipment: Equipment,
 ) -> None:
+    if equipment.bookings:
+        raise HTTPException(
+            status_code=409,
+            detail="Equipment with booking history cannot be deleted.",
+        )
     db.delete(equipment)
     db.commit()

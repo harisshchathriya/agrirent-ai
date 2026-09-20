@@ -107,6 +107,13 @@ def edit_equipment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    role_value = getattr(current_user.role, "value", current_user.role)
+    if role_value != UserRole.OWNER.value:
+        raise HTTPException(
+            status_code=403,
+            detail="Only owners can update equipment.",
+        )
+
     equipment = get_equipment_by_id(
         db,
         equipment_id,
@@ -142,6 +149,13 @@ def remove_equipment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    role_value = getattr(current_user.role, "value", current_user.role)
+    if role_value != UserRole.OWNER.value:
+        raise HTTPException(
+            status_code=403,
+            detail="Only owners can delete equipment.",
+        )
+
     equipment = get_equipment_by_id(
         db,
         equipment_id,

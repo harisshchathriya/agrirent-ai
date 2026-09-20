@@ -169,6 +169,11 @@ def delete_booking(
     db: Session,
     booking: Booking,
 ):
+    if booking.status != BookingStatus.PENDING:
+        raise HTTPException(
+            status_code=409,
+            detail="Only pending bookings can be deleted.",
+        )
     db.delete(booking)
     db.commit()
 
@@ -270,6 +275,25 @@ def approve_booking(
         raise HTTPException(
             status_code=409,
             detail="Only pending bookings can be approved.",
+        )
+
+    conflicting_booking = (
+        db.query(Booking)
+        .filter(
+            Booking.id != booking.id,
+            Booking.equipment_id == booking.equipment_id,
+            Booking.status == BookingStatus.APPROVED,
+            and_(
+                Booking.start_date <= booking.end_date,
+                Booking.end_date >= booking.start_date,
+            ),
+        )
+        .first()
+    )
+    if conflicting_booking is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="This booking overlaps an already approved booking.",
         )
 
     booking.status = BookingStatus.APPROVED

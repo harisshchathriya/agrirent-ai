@@ -1,4 +1,6 @@
 from unittest.mock import MagicMock
+import pytest
+from fastapi import HTTPException
 from uuid import uuid4
 
 from app.models.equipment import Equipment
@@ -180,3 +182,23 @@ def test_delete_equipment():
     assert result is None
     db.delete.assert_called_once_with(equipment)
     db.commit.assert_called_once()
+
+
+def test_delete_equipment_rejects_booking_history():
+    db = MagicMock()
+    equipment = Equipment(
+        id=uuid4(),
+        owner_id=uuid4(),
+        name="Tractor",
+        category="Tractor",
+        description="Agricultural tractor",
+        price_per_day=2500,
+        location="Trichy",
+    )
+    equipment.bookings = [MagicMock()]
+
+    with pytest.raises(HTTPException) as exc_info:
+        equipment_service.delete_equipment(db, equipment)
+
+    assert exc_info.value.status_code == 409
+    db.delete.assert_not_called()

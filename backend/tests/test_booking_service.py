@@ -435,14 +435,18 @@ def test_approve_booking_changes_status_and_unavailable_equipment():
 
     query = db.query.return_value
 
-    first_call = MagicMock()
-    first_call.filter.return_value.first.return_value = equipment
+    conflict_call = MagicMock()
+    conflict_call.filter.return_value.first.return_value = None
+
+    equipment_call = MagicMock()
+    equipment_call.filter.return_value.first.return_value = equipment
 
     second_call = MagicMock()
     second_call.options.return_value.filter.return_value.first.return_value = booking
 
     db.query.side_effect = [
-        first_call,
+        conflict_call,
+        equipment_call,
         second_call,
     ]
 
@@ -454,6 +458,22 @@ def test_approve_booking_changes_status_and_unavailable_equipment():
     assert booking.status == BookingStatus.APPROVED
     assert equipment.availability is False
     assert result == booking
+
+
+def test_approve_booking_rejects_approved_overlap():
+    db = MagicMock()
+    booking = make_booking(status=BookingStatus.PENDING)
+    conflict = make_booking(
+        equipment_id=booking.equipment_id,
+        status=BookingStatus.APPROVED,
+    )
+    db.query.return_value.filter.return_value.first.return_value = conflict
+
+    with pytest.raises(HTTPException) as exc:
+        booking_service.approve_booking(db, booking)
+
+    assert exc.value.status_code == 409
+    assert booking.status == BookingStatus.PENDING
 
 
 def test_approve_booking_rejects_non_pending_booking():

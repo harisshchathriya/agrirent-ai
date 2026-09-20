@@ -28,6 +28,7 @@ export default function MyBookings() {
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
   const [activeBookingId, setActiveBookingId] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     loadBookings();
@@ -61,6 +62,10 @@ export default function MyBookings() {
     }
   }
 
+  const filteredBookings = bookings.filter(
+    (booking) => statusFilter === "all" || booking.status === statusFilter
+  );
+
   return (
     <MainLayout>
       <PageHeader
@@ -88,8 +93,35 @@ export default function MyBookings() {
           description="Start by browsing available equipment and create your first rental."
         />
       ) : (
-        <div className="space-y-5">
-          {bookings.map((booking) => (
+        <div>
+          <div className="mb-6 flex flex-wrap items-center gap-3">
+            <label htmlFor="booking-status" className="text-sm font-semibold text-slate-700">
+              Filter status
+            </label>
+            <select
+              id="booking-status"
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="rounded-xl border border-slate-200 px-4 py-3"
+            >
+              <option value="all">All bookings</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="completed">Completed</option>
+              <option value="rejected">Rejected</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          {filteredBookings.length === 0 ? (
+            <EmptyState
+              title="No bookings match this status"
+              description="Choose another status filter to view your booking history."
+            />
+          ) : null}
+
+          <div className="space-y-5">
+          {filteredBookings.map((booking) => (
             <div
               key={booking.id}
               className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-sm transition hover:shadow-md"
@@ -212,6 +244,7 @@ export default function MyBookings() {
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
     </MainLayout>
