@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import DashboardCard from "../../components/DashboardCard";
 import ErrorState from "../../components/ErrorState";
 import LoadingState from "../../components/LoadingState";
@@ -105,6 +106,37 @@ export default function Dashboard() {
     (item) => item.availability
   ).length;
   const bookedEquipment = equipment.length - availableEquipment;
+  const isOwner = currentUser?.role === "owner";
+  const dashboardEquipment = isOwner
+    ? equipment.filter((item) => item.owner_id === currentUser.id)
+    : equipment;
+  const dashboardAvailableEquipment = dashboardEquipment.filter(
+    (item) => item.availability
+  ).length;
+  const pendingBookings = myBookings.filter(
+    (booking) => booking.status === "pending"
+  ).length;
+  const upcomingBookings = myBookings.filter(
+    (booking) =>
+      ["pending", "approved"].includes(booking.status) &&
+      new Date(booking.start_date) >= new Date()
+  );
+  const completedBookings = myBookings.filter(
+    (booking) => booking.status === "completed"
+  ).length;
+  const ownerRevenue = ownerBookings
+    .filter((booking) => booking.status === "completed")
+    .reduce((total, booking) => total + Number(booking.total_price || 0), 0);
+  const quickActions = isOwner
+    ? [
+        ["Add Equipment", "/equipment/add"],
+        ["My Equipment", "/equipment"],
+        ["Booking Requests", "/owner"],
+      ]
+    : [
+        ["Find Equipment", "/equipment"],
+        ["My Bookings", "/bookings"],
+      ];
 
   return (
     <MainLayout>
@@ -123,38 +155,90 @@ export default function Dashboard() {
         />
       ) : (
         <>
+          <div className="mb-8 flex flex-wrap gap-3">
+            {quickActions.map(([label, path]) => (
+              <Link
+                key={label}
+                to={path}
+                className="rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-5">
             <DashboardCard
-              title="Total Equipment"
-              value={equipment.length}
-              subtitle="Live equipment records"
+              title={isOwner ? "My Equipment" : "Total Equipment"}
+              value={dashboardEquipment.length}
+              subtitle={isOwner ? "Owner listings" : "Live equipment records"}
               color="#059669"
             />
             <DashboardCard
               title="Available Equipment"
-              value={availableEquipment}
+              value={dashboardAvailableEquipment}
               subtitle="Ready for new bookings"
               color="#16a34a"
             />
             <DashboardCard
-              title="Active Bookings"
-              value={activeBookings}
-              subtitle="Approved rentals in progress"
+              title={isOwner ? "Total Bookings" : "Active Bookings"}
+              value={isOwner ? ownerBookings.length : activeBookings}
+              subtitle={isOwner ? "Bookings on your equipment" : "Approved rentals in progress"}
               color="#0284c7"
             />
             <DashboardCard
-              title="Pending Requests"
-              value={pendingRequests}
-              subtitle="Awaiting owner action"
+              title={isOwner ? "Pending Requests" : "Pending Bookings"}
+              value={isOwner ? pendingRequests : pendingBookings}
+              subtitle={isOwner ? "Awaiting your action" : "Awaiting owner action"}
               color="#d97706"
             />
             <DashboardCard
-              title="Completed Rentals"
-              value={completedRentals}
-              subtitle="Finished booking cycles"
+              title={isOwner ? "Completed Rentals" : "Completed Bookings"}
+              value={isOwner ? completedRentals : completedBookings}
+              subtitle={isOwner ? "Finished booking cycles" : "Your finished rentals"}
               color="#7c3aed"
             />
           </div>
+
+          {!isOwner && currentUser?.role === "farmer" ? (
+            <div className="mt-8 rounded-3xl border border-sky-100 bg-sky-50 p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Upcoming Rentals</h2>
+                  <p className="mt-1 text-slate-600">Your next approved or pending rental activity.</p>
+                </div>
+                <Link to="/bookings" className="font-semibold text-sky-700 hover:underline">View history</Link>
+              </div>
+              {upcomingBookings.length === 0 ? (
+                <p className="mt-5 text-slate-600">You have no upcoming rentals yet.</p>
+              ) : (
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  {upcomingBookings.slice(0, 3).map((booking) => (
+                    <div key={booking.id} className="rounded-2xl bg-white p-4">
+                      <p className="font-semibold text-slate-900">{booking.equipment_name}</p>
+                      <p className="mt-1 text-sm text-slate-500">{booking.start_date} to {booking.end_date}</p>
+                      <p className="mt-2 text-sm capitalize text-sky-700">{booking.status}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          {isOwner ? (
+            <div className="mt-8 grid gap-5 md:grid-cols-2">
+              <div className="rounded-3xl border border-emerald-100 bg-emerald-50 p-6">
+                <p className="text-sm uppercase tracking-[0.16em] text-emerald-700">Revenue</p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">{ownerRevenue.toLocaleString("en-IN", { style: "currency", currency: "INR" })}</p>
+                <p className="mt-1 text-sm text-slate-600">Completed bookings only</p>
+              </div>
+              <div className="rounded-3xl border border-amber-100 bg-amber-50 p-6">
+                <p className="text-sm uppercase tracking-[0.16em] text-amber-700">Utilization</p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">{dashboardEquipment.length ? Math.round(((dashboardEquipment.length - dashboardAvailableEquipment) / dashboardEquipment.length) * 100) : 0}%</p>
+                <p className="mt-1 text-sm text-slate-600">Current unavailable share of your listings</p>
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-12 rounded-[2rem] border border-white/60 bg-white/90 p-8 shadow-sm">
             <h2 className="text-2xl font-bold text-slate-900">
@@ -187,7 +271,7 @@ export default function Dashboard() {
                   Requests
                 </p>
                 <p className="mt-2 text-lg font-semibold text-slate-900">
-                  {currentUser.role === "owner"
+                  {isOwner
                     ? ownerBookings.length === 0
                       ? "No incoming bookings"
                       : `${pendingRequests} waiting for owner action`

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { FaMapMarkerAlt, FaTractor, FaUser } from "react-icons/fa";
 import ErrorState from "../../components/ErrorState";
 import LoadingState from "../../components/LoadingState";
@@ -7,15 +7,18 @@ import MainLayout from "../../layouts/MainLayout";
 import PageHeader from "../../components/PageHeader";
 import StatusBadge from "../../components/StatusBadge";
 import { AuthContext } from "../../context/authContext";
-import { getEquipmentById } from "../../services/equipmentService";
+import { deleteEquipment, getEquipmentById } from "../../services/equipmentService";
 import { formatCurrency } from "../../utils/formatters";
 
 export default function EquipmentDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
   const [equipment, setEquipment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function loadEquipmentDetails() {
@@ -88,12 +91,32 @@ export default function EquipmentDetails() {
     : isOwnEquipment
       ? "You cannot book your own equipment."
       : "";
+  async function handleDelete() {
+    if (!window.confirm("Delete this equipment listing? This cannot be undone.")) {
+      return;
+    }
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteEquipment(id);
+      navigate("/equipment");
+    } catch (deleteError) {
+      setDeleteError(deleteError.message);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <MainLayout>
       <PageHeader
         title={equipment.name}
         description="Live equipment data from the backend, including booking availability and pricing."
+        action={(
+          <button type="button" onClick={() => navigate(-1)} className="rounded-xl border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-50">
+            Back
+          </button>
+        )}
       />
 
       <div className="grid gap-8 rounded-[2rem] border border-emerald-100 bg-white/90 p-6 shadow-sm lg:grid-cols-[1.1fr_0.9fr] lg:p-8">
@@ -153,7 +176,13 @@ export default function EquipmentDetails() {
             </div>
           </div>
 
-          {bookingBlockedMessage ? (
+          {isOwnEquipment ? (
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button type="button" disabled={deleting} onClick={handleDelete} className="inline-flex justify-center rounded-xl bg-rose-600 px-6 py-4 font-semibold text-white disabled:bg-rose-300 sm:min-w-48">
+                {deleting ? "Deleting..." : "Delete Equipment"}
+              </button>
+            </div>
+          ) : bookingBlockedMessage ? (
             <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-800">
               {bookingBlockedMessage}
             </div>
@@ -167,6 +196,8 @@ export default function EquipmentDetails() {
           )}
         </div>
       </div>
+
+      {deleteError ? <p className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-700">{deleteError}</p> : null}
     </MainLayout>
   );
 }

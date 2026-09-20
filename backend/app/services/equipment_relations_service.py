@@ -5,7 +5,7 @@ from app.models.booking import Booking, BookingStatus
 from app.models.equipment import Equipment
 from app.models.equipment_image import EquipmentImage
 from app.models.review import Review
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.equipment_image_schema import EquipmentImageCreate
 from app.schemas.review_schema import ReviewCreate
 
@@ -29,7 +29,8 @@ def get_images(db: Session, equipment_id):
 
 def add_image(db: Session, equipment_id, image_data: EquipmentImageCreate, current_user: User):
     equipment = get_equipment_or_404(db, equipment_id)
-    if equipment.owner_id != current_user.id:
+    role_value = getattr(current_user.role, "value", current_user.role)
+    if role_value != UserRole.OWNER.value or equipment.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Only the equipment owner can add images.")
 
     image = EquipmentImage(equipment_id=equipment_id, image_url=image_data.image_url)

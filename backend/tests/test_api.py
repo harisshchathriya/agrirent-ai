@@ -238,8 +238,33 @@ def test_update_equipment_rejects_non_owner(authenticated_client, monkeypatch):
     service.assert_not_called()
 
 
+def test_admin_cannot_update_owned_equipment(authenticated_client, monkeypatch):
+    test_client, _, user = authenticated_client
+    user.role = "admin"
+    equipment = make_equipment(user.id)
+    lookup = MagicMock(return_value=equipment)
+    monkeypatch.setattr(equipment_api, "get_equipment_by_id", lookup)
+    service = MagicMock()
+    monkeypatch.setattr(equipment_api, "update_equipment", service)
+    payload = {
+        "name": "Tractor",
+        "category": "Tractor",
+        "description": "Reliable tractor",
+        "price_per_day": 2500,
+        "location": "Trichy",
+    }
+
+    response = test_client.put(f"/equipment/{equipment.id}", json=payload)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Only owners can update equipment."
+    lookup.assert_not_called()
+    service.assert_not_called()
+
+
 def test_delete_equipment_owner_deletes_resource(authenticated_client, monkeypatch):
     test_client, db, user = authenticated_client
+    user.role = "owner"
     equipment = make_equipment(user.id)
     monkeypatch.setattr(equipment_api, "get_equipment_by_id", MagicMock(return_value=equipment))
     service = MagicMock()
@@ -250,6 +275,22 @@ def test_delete_equipment_owner_deletes_resource(authenticated_client, monkeypat
     assert response.status_code == 200
     assert response.json()["message"] == "Equipment deleted successfully"
     service.assert_called_once_with(db, equipment)
+
+
+def test_admin_cannot_delete_owned_equipment(authenticated_client, monkeypatch):
+    test_client, _, user = authenticated_client
+    user.role = "admin"
+    lookup = MagicMock()
+    monkeypatch.setattr(equipment_api, "get_equipment_by_id", lookup)
+    service = MagicMock()
+    monkeypatch.setattr(equipment_api, "delete_equipment", service)
+
+    response = test_client.delete(f"/equipment/{uuid4()}")
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Only owners can delete equipment."
+    lookup.assert_not_called()
+    service.assert_not_called()
 
 
 def test_create_booking_success_calls_service(authenticated_client, monkeypatch):

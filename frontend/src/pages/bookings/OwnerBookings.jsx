@@ -116,6 +116,12 @@ export default function OwnerBookings() {
     return null;
   }
 
+  function bookingDuration(booking) {
+    const start = new Date(booking.start_date);
+    const end = new Date(booking.end_date);
+    return Math.round((end - start) / 86400000) + 1;
+  }
+
   return (
     <MainLayout>
       <PageHeader
@@ -205,6 +211,13 @@ export default function OwnerBookings() {
                   <p className="text-sm text-slate-500">Price Per Day</p>
                   <p className="mt-2 text-lg font-semibold text-slate-900">
                     {formatCurrency(booking.price_per_day)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500">Duration</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-900">
+                    {bookingDuration(booking)} day{bookingDuration(booking) === 1 ? "" : "s"}
                   </p>
                 </div>
 
