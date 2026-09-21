@@ -8,6 +8,7 @@ from app.models import (
     Booking,
     EquipmentImage,
     Review,
+    PasswordResetToken,
 )
 
 print("Creating database tables...")

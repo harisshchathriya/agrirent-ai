@@ -3,3 +3,4 @@ from .equipment import Equipment
 from .booking import Booking
 from .equipment_image import EquipmentImage
 from .review import Review
+from .password_reset_token import PasswordResetToken

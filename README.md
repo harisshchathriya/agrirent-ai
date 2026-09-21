@@ -6,7 +6,7 @@ Agricultural Equipment Rental Platform
 
 AgriRent AI is a full-stack rental platform for agricultural equipment. Farmers can browse equipment, request bookings, and manage their own rentals, while owners can list equipment, approve booking requests, and manage their inventory. The application also includes an admin role for platform oversight and a secure JWT-based authentication flow.
 
-This repository is aligned to Review-II: the product scope is the working rental workflow, role-based access control, persistence, validation, and deployment readiness rather than later AI or enhancement features.
+This repository is aligned to Review-II: the product scope is the working rental workflow, role-based access control, persistence, validation, and deployment readiness rather than later AI or enhancement features. Administrator accounts remain backend-controlled.
 
 ## Problem Statement
 
@@ -14,13 +14,12 @@ The core problem is to reduce the friction between equipment owners and farmers 
 
 ## Features
 
-- Farmer, owner, and admin roles with role-aware screens and permissions
-- JWT authentication and bcrypt password hashing
+- Farmer and owner public registration with role-aware screens and permissions; admin is backend-controlled
+- JWT authentication, bcrypt password hashing, and secure password-reset tokens
 - Equipment listing, detail view, and ownership-restricted create/update/delete flows
 - Booking creation and lifecycle management
 - Validation for past-date, invalid-range, overlap, and ownership rules
 - Owner-only booking approval, rejection, completion, and cancellation actions
-- Admin overview for platform counts and monitoring
 - PostgreSQL persistence via SQLAlchemy ORM
 - Pydantic request validation and safe CORS configuration
 - Health endpoint and basic backend logging
@@ -57,7 +56,7 @@ The application follows a simple three-tier design:
 | --- | --- |
 | Farmer | Browse equipment, create bookings, view own bookings |
 | Owner | Manage own equipment, view owner bookings, approve/reject/complete/cancel bookings for their equipment |
-| Admin | Access admin-only monitoring endpoints and platform overview |
+| Admin | Backend-controlled role; not available through public registration |
 
 Authorization is enforced on the backend and not only in the UI.
 
@@ -73,13 +72,21 @@ The Review-II database uses PostgreSQL and includes the core application entitie
 
 This structure matches the current ORM models and the ER design artifact in the docs directory.
 
+Password reset tokens are stored separately in an authentication-only table; they do not change the rental-domain entities.
+
 ## API Documentation
 
 - Swagger UI: https://agrirent-ai-backend-yrxg.onrender.com/docs
 - OpenAPI JSON: https://agrirent-ai-backend-yrxg.onrender.com/openapi.json
 - Health check: https://agrirent-ai-backend-yrxg.onrender.com/health
 
-The API exposes the current Review-II flow for authentication, equipment management, booking workflows, and admin overview endpoints.
+The API exposes the current Review-II flow for authentication, equipment management, booking workflows, and equipment relations.
+
+Public registration requires a Farmer or Owner selection. The login screen also
+provides a password-reset flow: reset tokens are time-limited, stored only as
+hashes, and are invalidated after use. In development or demo environments, set
+`APP_ENV=development` or `APP_ENV=demo` to log the generated reset URL; production
+responses never expose the raw token.
 
 ## Local Setup
 
@@ -129,7 +136,9 @@ Required backend variables:
 - `SECRET_KEY`
 - `ALGORITHM`
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `PASSWORD_RESET_TOKEN_EXPIRE_MINUTES` (optional; defaults to 30)
 - `FRONTEND_URL`
+- `APP_ENV` (set to `development` or `demo` only when reset URLs may be logged)
 
 Frontend runtime configuration:
 
@@ -193,6 +202,8 @@ The backend must receive `DATABASE_URL` and `SECRET_KEY` from the deployment env
 - Passwords are hashed with bcrypt.
 - Sensitive values are stored in environment variables, not committed to the repository.
 - CORS is limited to the configured frontend origin and credentials remain enabled for the auth flow.
+- Public registration cannot create administrator accounts.
+- Password-reset tokens are generated securely, stored as hashes, expire, and are single-use.
 
 ## Out-of-Scope Items / Limitations
 
@@ -321,16 +332,6 @@ The frontend reads its API base URL from `VITE_API_URL`. For local development, 
 - OpenAPI JSON: https://agrirent-ai-backend-yrxg.onrender.com/openapi.json
 - Health check: https://agrirent-ai-backend-yrxg.onrender.com/health
 
-Additional authenticated endpoints:
-
-- `POST /ai/recommendations` — deterministic smart equipment matching
-- `POST /ai/parse` — deterministic natural-language requirement parsing
-- `GET /ai/price-insight/{equipment_id}` — catalog-based price insight, or an explicit insufficient-data response
-- `GET /admin/overview` — live platform counts for administrators only
-- `GET /admin/users` — admin-only user search and role filtering
-- `GET /admin/equipment` — admin-only equipment monitoring
-- `GET /admin/bookings` — admin-only booking monitoring and status filtering
-
 ## Deployment
 
 The Review-II deployment uses Vercel for the frontend, Render for the FastAPI
@@ -390,7 +391,7 @@ npm run build
 
 The current MVP scope is registration, login, JWT authentication, equipment browsing
 and creation, booking creation, renter bookings, owner booking management, validation,
-and PostgreSQL persistence. Ratings/reviews, notifications, payments, maps, weather,
+and PostgreSQL persistence. Notifications, payments, maps, weather,
 AI recommendations, and analytics are outside the current Problem Statement scope.
 
 - AI equipment recommendation

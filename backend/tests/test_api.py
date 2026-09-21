@@ -87,7 +87,37 @@ def test_register_success_returns_public_user_response(client, monkeypatch):
     assert response.json()["email"] == "user@example.com"
     assert "hashed_password" not in response.json()
     assert service.call_args.args[0] is db
-    assert not hasattr(service.call_args.args[1], "role")
+    assert service.call_args.args[1].role.value == "farmer"
+
+
+def test_register_owner_success_returns_owner_role(client, monkeypatch):
+    test_client, _ = client
+    owner = make_user()
+    owner.role = "owner"
+    monkeypatch.setattr(auth_api, "register_user", MagicMock(return_value=owner))
+
+    response = test_client.post("/auth/register", json={
+        "name": "Test Owner", "email": "owner@example.com", "password": "safe-password",
+        "phone": "9876543210", "role": "owner",
+    })
+
+    assert response.status_code == 200
+    assert response.json()["role"] == "owner"
+
+
+@pytest.mark.parametrize("role", ["ADMIN", "unknown"])
+def test_register_rejects_unknown_role(client, monkeypatch, role):
+    test_client, _ = client
+    service = MagicMock()
+    monkeypatch.setattr(auth_api, "register_user", service)
+
+    response = test_client.post("/auth/register", json={
+        "name": "Invalid Role", "email": "invalid@example.com", "password": "safe-password",
+        "phone": "9876543210", "role": role,
+    })
+
+    assert response.status_code == 422
+    service.assert_not_called()
 
 
 def test_register_rejects_invalid_body_before_service(client, monkeypatch):
@@ -110,6 +140,67 @@ def test_register_returns_bad_request_for_duplicate_email(client, monkeypatch):
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Email already registered"
+
+
+def test_register_rejects_admin_role_in_service(client, monkeypatch):
+    test_client, _ = client
+    monkeypatch.setattr(
+        auth_api,
+        "register_user",
+        MagicMock(side_effect=ValueError("Only farmer and owner roles can be registered publicly.")),
+    )
+
+    response = test_client.post("/auth/register", json={
+        "name": "Admin Attempt", "email": "admin@example.com", "password": "safe-password",
+        "phone": "9876543210", "role": "admin",
+    })
+
+    assert response.status_code == 400
+
+
+def test_forgot_password_returns_same_generic_response_for_known_and_unknown_email(client, monkeypatch):
+    test_client, db = client
+    user = make_user()
+    get_user = MagicMock(side_effect=[user, None])
+    create_token = MagicMock(return_value="development-only-token")
+    monkeypatch.setattr(auth_api, "get_user_by_email", get_user)
+    monkeypatch.setattr(auth_api, "create_password_reset_token", create_token)
+
+    known = test_client.post("/auth/forgot-password", json={"email": "user@example.com"})
+    unknown = test_client.post("/auth/forgot-password", json={"email": "missing@example.com"})
+
+    expected = {"message": "If an account exists for this email, a password reset link has been generated."}
+    assert known.status_code == unknown.status_code == 200
+    assert known.json() == unknown.json() == expected
+    assert "token" not in known.json()
+    create_token.assert_called_once_with(db, user)
+
+
+def test_reset_password_returns_success_without_authentication(client, monkeypatch):
+    test_client, db = client
+    service = MagicMock(return_value=True)
+    monkeypatch.setattr(auth_api, "reset_password", service)
+
+    response = test_client.post("/auth/reset-password", json={
+        "token": "valid-token", "new_password": "new-password",
+    })
+
+    assert response.status_code == 200
+    assert response.json() == {"message": "Password reset successful. You can now log in."}
+    assert "access_token" not in response.json()
+    service.assert_called_once_with(db, "valid-token", "new-password")
+
+
+def test_reset_password_rejects_invalid_or_expired_token(client, monkeypatch):
+    test_client, _ = client
+    monkeypatch.setattr(auth_api, "reset_password", MagicMock(return_value=False))
+
+    response = test_client.post("/auth/reset-password", json={
+        "token": "invalid-token", "new_password": "new-password",
+    })
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid or expired password reset link."
 
 
 def test_login_success_returns_bearer_token(client, monkeypatch):

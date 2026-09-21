@@ -43,6 +43,21 @@ export const loginUser = async (email, password) => {
   }
 };
 
+export const requestPasswordReset = async (email) =>
+  requestData(
+    () => api.post("/auth/forgot-password", { email }),
+    "Unable to request a password reset."
+  );
+
+export const resetPassword = async (token, newPassword) =>
+  requestData(
+    () => api.post("/auth/reset-password", {
+      token,
+      new_password: newPassword,
+    }),
+    "Invalid or expired password reset link."
+  );
+
 export const getCurrentUser = async () =>
   requestData(
     () => api.get("/auth/users/me"),

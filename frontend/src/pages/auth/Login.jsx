@@ -76,6 +76,12 @@ export default function Login() {
           {submitting ? "Signing In..." : "Login"}
         </button>
 
+        <p className="mt-4 text-center">
+          <Link className="text-emerald-700" to="/forgot-password">
+            Forgot Password?
+          </Link>
+        </p>
+
         <p className="mt-5 text-center">
           Don't have an account?{" "}
           <Link className="text-emerald-700" to="/register">

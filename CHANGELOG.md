@@ -2,6 +2,8 @@
 
 ## Review-II
 
+- Added farmer/owner selection during public registration and blocked administrator self-registration.
+- Added a secure, time-limited, single-use password-reset flow with development/demo-only reset URL logging.
 - Added explicit owner-role authorization for owner booking APIs and owner routes.
 - Made the shared dashboard role-aware so farmers and administrators do not call owner-only endpoints.
 - Prevented public registration from self-assigning owner or administrator roles.

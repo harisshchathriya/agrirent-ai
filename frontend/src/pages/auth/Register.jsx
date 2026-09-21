@@ -14,6 +14,7 @@ export default function Register() {
     email: "",
     password: "",
     phone: "",
+    role: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +28,10 @@ export default function Register() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (!formData.role) {
+      setError("Please select a role.");
+      return;
+    }
     setSubmitting(true);
     setError("");
 
@@ -84,6 +89,20 @@ export default function Register() {
             className="w-full rounded-xl border border-slate-200 p-3"
             required
           />
+          <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+            Role
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-slate-200 bg-white p-3 font-normal"
+              required
+            >
+              <option value="" disabled>Select Role</option>
+              <option value="farmer">Farmer</option>
+              <option value="owner">Owner</option>
+            </select>
+          </label>
         </div>
 
         <input

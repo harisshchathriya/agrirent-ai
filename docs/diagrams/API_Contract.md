@@ -65,6 +65,23 @@ Bearer JWT required.
 
 ---
 
+## POST /auth/forgot-password
+
+Accepts an email address and always returns the same generic response, whether
+or not the account exists. For a matching account, the backend creates a
+single-use, time-limited password-reset token. The raw token is never returned
+by the production API response.
+
+---
+
+## POST /auth/reset-password
+
+Accepts a password-reset token and a new password. The token must exist, be
+unused, and be within its expiry period. On success, the password is bcrypt
+hashed and the token is invalidated. This endpoint does not issue a JWT.
+
+---
+
 # Equipment
 
 ## GET /equipment
@@ -374,6 +391,9 @@ Supported application roles:
 - FARMER
 - OWNER
 - ADMIN
+
+Public registration accepts only the FARMER and OWNER roles. ADMIN accounts
+cannot be created through the public registration endpoint.
 
 Role-based authorization is applied to protected operations.
 
