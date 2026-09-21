@@ -1,0 +1,304 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="NdM616o4WJ6qo4a_VZAA">
+    <mxGraphModel dx="3433" dy="1873" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-1" parent="1" style="text;html=1;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1f2937;" value="AgriRent AI – Entity Relationship Diagram" vertex="1">
+          <mxGeometry height="40" width="640" x="360" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-2" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=16;html=1;" value="users" vertex="1">
+          <mxGeometry height="300" width="320" x="460" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-3" parent="Yl2LCVW97FlxT2FTwfJW-2" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-4" parent="Yl2LCVW97FlxT2FTwfJW-2" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="name : VARCHAR(100) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-5" parent="Yl2LCVW97FlxT2FTwfJW-2" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="email : VARCHAR(100) UNIQUE NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-6" parent="Yl2LCVW97FlxT2FTwfJW-2" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="hashed_password : VARCHAR(255) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-7" parent="Yl2LCVW97FlxT2FTwfJW-2" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="phone : VARCHAR(15) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-8" parent="Yl2LCVW97FlxT2FTwfJW-2" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="role : ENUM(UserRole) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-9" parent="Yl2LCVW97FlxT2FTwfJW-2" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="created_at : DATETIME" vertex="1">
+          <mxGeometry height="30" width="320" y="212" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-10" parent="Yl2LCVW97FlxT2FTwfJW-2" style="text;align=left;verticalAlign=middle;fillColor=#f7fbff;strokeColor=#b7c9e2;fontColor=#4b5563;fontSize=11;html=1;" value="UserRole: admin, farmer, owner" vertex="1">
+          <mxGeometry height="30" width="320" y="242" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-11" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=16;html=1;" value="equipment" vertex="1">
+          <mxGeometry height="390" width="320" x="460" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-12" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-13" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;fontStyle=1;" value="🔗 FK   owner_id : UUID NOT NULL → users.id" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-14" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="name : VARCHAR(100) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-15" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="category : VARCHAR(50) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-16" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="description : TEXT NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-17" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="price_per_day : NUMERIC(10,2) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-18" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="location : VARCHAR(100) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="212" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-19" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="availability : BOOLEAN" vertex="1">
+          <mxGeometry height="30" width="320" y="242" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-20" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="image_url : VARCHAR(255) NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="272" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-21" parent="Yl2LCVW97FlxT2FTwfJW-11" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="created_at : DATETIME" vertex="1">
+          <mxGeometry height="30" width="320" y="302" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-22" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=16;html=1;" value="bookings" vertex="1">
+          <mxGeometry height="270" width="320" x="840" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-23" parent="Yl2LCVW97FlxT2FTwfJW-22" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-24" parent="Yl2LCVW97FlxT2FTwfJW-22" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;fontStyle=1;" value="🔗 FK   equipment_id : UUID NOT NULL → equipment.id" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-25" parent="Yl2LCVW97FlxT2FTwfJW-22" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;fontStyle=1;" value="🔗 FK   renter_id : UUID NOT NULL → users.id" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-26" parent="Yl2LCVW97FlxT2FTwfJW-22" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="start_date : DATE NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-27" parent="Yl2LCVW97FlxT2FTwfJW-22" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="end_date : DATE NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-28" parent="Yl2LCVW97FlxT2FTwfJW-22" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="total_price : NUMERIC(10,2) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-29" parent="Yl2LCVW97FlxT2FTwfJW-22" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="status : ENUM(BookingStatus) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="212" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-30" parent="Yl2LCVW97FlxT2FTwfJW-22" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="created_at : DATETIME NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="242" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-31" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#fce4ec;strokeColor=#b85450;fontStyle=1;fontSize=16;html=1;" value="equipment_images" vertex="1">
+          <mxGeometry height="150" width="320" x="1220" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-32" parent="Yl2LCVW97FlxT2FTwfJW-31" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6a0a0;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-33" parent="Yl2LCVW97FlxT2FTwfJW-31" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6a0a0;html=1;fontStyle=1;" value="🔗 FK   equipment_id : UUID NOT NULL → equipment.id" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-34" parent="Yl2LCVW97FlxT2FTwfJW-31" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6a0a0;html=1;" value="image_url : VARCHAR(255) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-35" parent="Yl2LCVW97FlxT2FTwfJW-31" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6a0a0;html=1;" value="created_at : DATETIME NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-36" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=16;html=1;" value="reviews" vertex="1">
+          <mxGeometry height="240" width="320" x="20" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-37" parent="Yl2LCVW97FlxT2FTwfJW-36" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-38" parent="Yl2LCVW97FlxT2FTwfJW-36" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;fontStyle=1;" value="🔗 FK   user_id : UUID NOT NULL → users.id" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-39" parent="Yl2LCVW97FlxT2FTwfJW-36" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;fontStyle=1;" value="🔗 FK   equipment_id : UUID NOT NULL → equipment.id" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-40" parent="Yl2LCVW97FlxT2FTwfJW-36" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;" value="rating : INTEGER NOT NULL (1–5)" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-41" parent="Yl2LCVW97FlxT2FTwfJW-36" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;" value="comment : TEXT NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-42" parent="Yl2LCVW97FlxT2FTwfJW-36" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;" value="created_at : DATETIME NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-43" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#6c8ebf;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-13" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-44" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#6c8ebf;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-25" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-45" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#82b366;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-24" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-46" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#82b366;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-33" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-47" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#6c8ebf;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-38" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-48" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#82b366;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-39" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-49" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontColor=#4b5563;fontStyle=2;fontSize=14;" value="ER model representing the current AgriRent AI application database." vertex="1">
+          <mxGeometry height="40" width="780" x="390" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-50" parent="1" style="text;html=1;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;fontColor=#1f2937;" value="AgriRent AI – Entity Relationship Diagram" vertex="1">
+          <mxGeometry height="40" width="640" x="360" y="950" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-51" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=16;html=1;" value="users" vertex="1">
+          <mxGeometry height="300" width="320" x="460" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-52" parent="Yl2LCVW97FlxT2FTwfJW-51" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-53" parent="Yl2LCVW97FlxT2FTwfJW-51" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="name : VARCHAR(100) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-54" parent="Yl2LCVW97FlxT2FTwfJW-51" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="email : VARCHAR(100) UNIQUE NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-55" parent="Yl2LCVW97FlxT2FTwfJW-51" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="hashed_password : VARCHAR(255) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-56" parent="Yl2LCVW97FlxT2FTwfJW-51" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="phone : VARCHAR(15) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-57" parent="Yl2LCVW97FlxT2FTwfJW-51" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="role : ENUM(UserRole) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-58" parent="Yl2LCVW97FlxT2FTwfJW-51" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b7c9e2;html=1;" value="created_at : DATETIME" vertex="1">
+          <mxGeometry height="30" width="320" y="212" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-59" parent="Yl2LCVW97FlxT2FTwfJW-51" style="text;align=left;verticalAlign=middle;fillColor=#f7fbff;strokeColor=#b7c9e2;fontColor=#4b5563;fontSize=11;html=1;" value="UserRole: admin, farmer, owner" vertex="1">
+          <mxGeometry height="30" width="320" y="242" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-60" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=16;html=1;" value="equipment" vertex="1">
+          <mxGeometry height="390" width="320" x="460" y="1370" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-61" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-62" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;fontStyle=1;" value="🔗 FK   owner_id : UUID NOT NULL → users.id" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-63" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="name : VARCHAR(100) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-64" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="category : VARCHAR(50) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-65" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="description : TEXT NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-66" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="price_per_day : NUMERIC(10,2) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-67" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="location : VARCHAR(100) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="212" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-68" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="availability : BOOLEAN" vertex="1">
+          <mxGeometry height="30" width="320" y="242" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-69" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="image_url : VARCHAR(255) NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="272" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-70" parent="Yl2LCVW97FlxT2FTwfJW-60" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#a9c99b;html=1;" value="created_at : DATETIME" vertex="1">
+          <mxGeometry height="30" width="320" y="302" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-71" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=16;html=1;" value="bookings" vertex="1">
+          <mxGeometry height="270" width="320" x="840" y="1370" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-72" parent="Yl2LCVW97FlxT2FTwfJW-71" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-73" parent="Yl2LCVW97FlxT2FTwfJW-71" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;fontStyle=1;" value="🔗 FK   equipment_id : UUID NOT NULL → equipment.id" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-74" parent="Yl2LCVW97FlxT2FTwfJW-71" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;fontStyle=1;" value="🔗 FK   renter_id : UUID NOT NULL → users.id" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-75" parent="Yl2LCVW97FlxT2FTwfJW-71" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="start_date : DATE NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-76" parent="Yl2LCVW97FlxT2FTwfJW-71" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="end_date : DATE NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-77" parent="Yl2LCVW97FlxT2FTwfJW-71" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="total_price : NUMERIC(10,2) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-78" parent="Yl2LCVW97FlxT2FTwfJW-71" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="status : ENUM(BookingStatus) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="212" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-79" parent="Yl2LCVW97FlxT2FTwfJW-71" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6b656;html=1;" value="created_at : DATETIME NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="242" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-80" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#fce4ec;strokeColor=#b85450;fontStyle=1;fontSize=16;html=1;" value="equipment_images" vertex="1">
+          <mxGeometry height="150" width="320" x="1220" y="1370" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-81" parent="Yl2LCVW97FlxT2FTwfJW-80" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6a0a0;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-82" parent="Yl2LCVW97FlxT2FTwfJW-80" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6a0a0;html=1;fontStyle=1;" value="🔗 FK   equipment_id : UUID NOT NULL → equipment.id" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-83" parent="Yl2LCVW97FlxT2FTwfJW-80" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6a0a0;html=1;" value="image_url : VARCHAR(255) NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-84" parent="Yl2LCVW97FlxT2FTwfJW-80" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#d6a0a0;html=1;" value="created_at : DATETIME NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-85" parent="1" style="swimlane;horizontal=1;startSize=32;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=16;html=1;" value="reviews" vertex="1">
+          <mxGeometry height="240" width="320" x="20" y="1370" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-86" parent="Yl2LCVW97FlxT2FTwfJW-85" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;fontStyle=1;" value="🔑 PK   id : UUID" vertex="1">
+          <mxGeometry height="30" width="320" y="32" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-87" parent="Yl2LCVW97FlxT2FTwfJW-85" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;fontStyle=1;" value="🔗 FK   user_id : UUID NOT NULL → users.id" vertex="1">
+          <mxGeometry height="30" width="320" y="62" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-88" parent="Yl2LCVW97FlxT2FTwfJW-85" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;fontStyle=1;" value="🔗 FK   equipment_id : UUID NOT NULL → equipment.id" vertex="1">
+          <mxGeometry height="30" width="320" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-89" parent="Yl2LCVW97FlxT2FTwfJW-85" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;" value="rating : INTEGER NOT NULL (1–5)" vertex="1">
+          <mxGeometry height="30" width="320" y="122" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-90" parent="Yl2LCVW97FlxT2FTwfJW-85" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;" value="comment : TEXT NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="152" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-91" parent="Yl2LCVW97FlxT2FTwfJW-85" style="text;align=left;verticalAlign=middle;fillColor=#ffffff;strokeColor=#b9a3c4;html=1;" value="created_at : DATETIME NOT NULL" vertex="1">
+          <mxGeometry height="30" width="320" y="182" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-92" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-52" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#6c8ebf;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-62" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-93" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-52" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#6c8ebf;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-74" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-94" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-61" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#82b366;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-73" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-95" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-61" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#82b366;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-82" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-96" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-52" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#6c8ebf;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-87" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-97" edge="1" parent="1" source="Yl2LCVW97FlxT2FTwfJW-61" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=classic;strokeColor=#82b366;fontColor=#374151;fontSize=12;html=1;" target="Yl2LCVW97FlxT2FTwfJW-88" value="1 : N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Yl2LCVW97FlxT2FTwfJW-98" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontColor=#4b5563;fontStyle=2;fontSize=14;" value="ER model representing the current AgriRent AI application database." vertex="1">
+          <mxGeometry height="40" width="780" x="390" y="1820" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

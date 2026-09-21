@@ -1,130 +1,430 @@
 # API Contract / OpenAPI Summary
 
-This document summarizes the current Review-II API surface implemented in the FastAPI backend. The canonical contract is generated at runtime by FastAPI and published through Swagger UI and OpenAPI JSON.
+This document summarizes the current Review-II API surface implemented in the FastAPI backend.
+
+The canonical API contract is generated at runtime by FastAPI and is available through Swagger UI and the OpenAPI JSON specification.
 
 ## Base URL
 
-- Production: https://agrirent-ai-backend-yrxg.onrender.com
-- Local: http://127.0.0.1:8000
+### Production
 
-## Authentication
+https://agrirent-ai-backend-yrxg.onrender.com
 
-### POST /auth/register
-- Creates a new farmer account.
-- Request body: `name`, `email`, `password`, `phone`.
-- Response: user profile payload.
+### Local
 
-### POST /auth/login
-- Accepts OAuth2 form fields: username and password.
-- Returns an access token and bearer token type.
+http://127.0.0.1:8000
 
-### GET /auth/users/me
-- Returns the currently authenticated user.
+---
 
-## Equipment
+# Authentication
 
-### GET /equipment
-- Returns all equipment records.
+## POST /auth/register
 
-### POST /equipment
-- Requires owner role.
-- Creates equipment for the authenticated owner.
+Creates a new farmer account.
 
-### GET /equipment/{equipment_id}
-- Returns equipment details by UUID.
+### Request Body
 
-### PUT /equipment/{equipment_id}
-- Requires owner role and ownership match.
-- Updates owned equipment.
+- name
+- email
+- password
+- phone
 
-### DELETE /equipment/{equipment_id}
-- Requires owner role and ownership match.
-- Removes owned equipment if no blocking booking history exists.
+### Response
 
-## Equipment Relationships
+User profile payload.
 
-### GET /equipment/{equipment_id}/images
-- Lists equipment images.
+---
 
-### POST /equipment/{equipment_id}/images
-- Requires owner role for the equipment owner.
-- Adds an equipment image.
+## POST /auth/login
 
-### GET /equipment/{equipment_id}/reviews
-- Lists equipment reviews.
+Authenticates a registered user.
 
-### POST /equipment/{equipment_id}/reviews
-- Requires an authenticated renter with a completed booking.
-- Creates a review for the equipment.
+### Request
 
-## Bookings
+OAuth2 form fields:
 
-### POST /bookings
-- Creates a booking request for equipment.
-- Validates equipment ownership, availability, dates, and overlap rules.
+- username
+- password
 
-### GET /bookings
-- Lists all bookings for the authenticated renter.
+### Response
 
-### GET /bookings/{booking_id}
-- Returns a booking if the current user is the renter or the equipment owner.
+- access_token
+- token_type
 
-### PUT /bookings/{booking_id}/status
-- Allows the renter to cancel a pending booking only.
+Authentication uses JWT bearer tokens.
 
-### DELETE /bookings/{booking_id}
-- Removes a pending booking created by the renter.
+---
 
-### GET /bookings/owner/bookings
-- Returns all bookings for equipment owned by the current user.
+## GET /auth/users/me
 
-### GET /bookings/owner/bookings/pending
-- Returns pending owner bookings for the current owner.
+Returns the currently authenticated user's profile.
 
-### PUT /bookings/owner/bookings/{booking_id}/approve
-- Requires owner role and ownership of the equipment.
-- Approves a pending booking if no overlapping approved booking exists.
+### Authentication
 
-### PUT /bookings/owner/bookings/{booking_id}/reject
-- Requires owner role and ownership of the equipment.
-- Rejects a pending booking.
+Bearer JWT required.
 
-### PUT /bookings/owner/bookings/{booking_id}/complete
-- Requires owner role and ownership of the equipment.
-- Completes an approved booking.
+---
 
-### PUT /bookings/owner/bookings/{booking_id}/cancel
-- Requires owner role and ownership of the equipment.
-- Cancels a pending or approved booking.
+# Equipment
 
-## Admin
+## GET /equipment
 
-### GET /admin/overview
-- Requires admin role.
-- Returns counts for farmers, owners, admins, and booking totals.
+Returns all available equipment records.
 
-### GET /admin/users
-- Requires admin role.
-- Lists users with optional search and role filtering.
+---
 
-### GET /admin/equipment
-- Requires admin role.
-- Lists equipment with optional search and availability filtering.
+## POST /equipment
 
-### GET /admin/bookings
-- Requires admin role.
-- Lists booking records with optional status and search filtering.
+Creates a new equipment listing.
 
-## Health and Metadata
+### Authentication
 
-### GET /
-- Returns the service welcome message.
+Bearer JWT required.
 
-### GET /health
-- Confirms the backend process is running.
+### Authorization
 
-### GET /docs
-- Swagger UI UI for interactive API exploration.
+Owner role required.
 
-### GET /openapi.json
-- Machine-readable OpenAPI schema for the current FastAPI app.
+The authenticated owner becomes the equipment owner.
+
+---
+
+## GET /equipment/{equipment_id}
+
+Returns equipment details for the specified equipment UUID.
+
+---
+
+## PUT /equipment/{equipment_id}
+
+Updates an equipment listing.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+Owner role required.
+
+The authenticated user must own the equipment.
+
+---
+
+## DELETE /equipment/{equipment_id}
+
+Deletes an equipment listing.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+Owner role required.
+
+The authenticated user must own the equipment.
+
+Equipment with blocking booking history cannot be deleted.
+
+---
+
+# Equipment Relationships
+
+## GET /equipment/{equipment_id}/images
+
+Returns images associated with the equipment.
+
+---
+
+## POST /equipment/{equipment_id}/images
+
+Adds an image to an equipment listing.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+The authenticated user must be the equipment owner.
+
+---
+
+## GET /equipment/{equipment_id}/reviews
+
+Returns reviews associated with the equipment.
+
+---
+
+## POST /equipment/{equipment_id}/reviews
+
+Creates a review for equipment.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+The authenticated renter must have a completed booking for the equipment.
+
+---
+
+# Bookings
+
+## POST /bookings
+
+Creates a booking request for equipment.
+
+### Authentication
+
+Bearer JWT required.
+
+### Business Rules
+
+The request validates:
+
+- Equipment existence
+- Equipment availability
+- Equipment ownership
+- Start date
+- End date
+- Date ordering
+- Booking overlap
+- Own-equipment booking prevention
+
+The total price is calculated from the equipment daily price and rental duration.
+
+---
+
+## GET /bookings
+
+Returns bookings for the authenticated renter.
+
+### Authentication
+
+Bearer JWT required.
+
+---
+
+## GET /bookings/{booking_id}
+
+Returns a booking when the authenticated user is:
+
+- The renter, or
+- The owner of the booked equipment
+
+### Authentication
+
+Bearer JWT required.
+
+---
+
+## PUT /bookings/{booking_id}/status
+
+Updates the booking status according to the implemented renter status rules.
+
+A renter can cancel a pending booking.
+
+### Authentication
+
+Bearer JWT required.
+
+---
+
+## DELETE /bookings/{booking_id}
+
+Deletes a pending booking created by the authenticated renter.
+
+### Authentication
+
+Bearer JWT required.
+
+---
+
+# Owner Booking Management
+
+## GET /bookings/owner/bookings
+
+Returns bookings associated with equipment owned by the authenticated owner.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+Owner role required.
+
+---
+
+## GET /bookings/owner/bookings/pending
+
+Returns pending booking requests for the authenticated owner's equipment.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+Owner role required.
+
+---
+
+## PUT /bookings/owner/bookings/{booking_id}/approve
+
+Approves a pending booking.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+Owner role required.
+
+The authenticated user must own the equipment.
+
+The system prevents overlapping approved bookings.
+
+---
+
+## PUT /bookings/owner/bookings/{booking_id}/reject
+
+Rejects a pending booking.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+Owner role required.
+
+The authenticated user must own the equipment.
+
+---
+
+## PUT /bookings/owner/bookings/{booking_id}/complete
+
+Completes an approved booking.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+Owner role required.
+
+The authenticated user must own the equipment.
+
+---
+
+## PUT /bookings/owner/bookings/{booking_id}/cancel
+
+Cancels a pending or approved booking.
+
+### Authentication
+
+Bearer JWT required.
+
+### Authorization
+
+Owner role required.
+
+The authenticated user must own the equipment.
+
+---
+
+# Health and Metadata
+
+## GET /
+
+Returns the backend service welcome response.
+
+---
+
+## GET /health
+
+Confirms that the backend service is running.
+
+---
+
+## GET /docs
+
+Provides the interactive Swagger UI generated by FastAPI.
+
+---
+
+## GET /openapi.json
+
+Provides the machine-readable OpenAPI specification generated by FastAPI.
+
+---
+
+# Authentication and Authorization
+
+The API uses JWT bearer authentication.
+
+Supported application roles:
+
+- FARMER
+- OWNER
+- ADMIN
+
+Role-based authorization is applied to protected operations.
+
+Owner-specific equipment and booking operations additionally verify ownership of the relevant equipment.
+
+---
+
+# Validation
+
+Request validation is handled using Pydantic schemas.
+
+Invalid request data is rejected by the API validation layer.
+
+---
+
+# Common HTTP Responses
+
+The API may return the following HTTP status codes depending on the operation:
+
+- 200 OK
+- 201 Created
+- 400 Bad Request
+- 401 Unauthorized
+- 403 Forbidden
+- 404 Not Found
+- 409 Conflict
+- 422 Validation Error
+- 500 Internal Server Error
+
+---
+
+# OpenAPI Documentation
+
+FastAPI automatically generates the API specification.
+
+Swagger UI:
+
+`/docs`
+
+OpenAPI JSON:
+
+`/openapi.json`
+
+The generated OpenAPI specification is the canonical source for the implemented API contract.
+
+---
+
+# Review-II Scope
+
+The API contract covers the implemented Review-II rental workflow:
+
+Registration → Authentication → Equipment Management → Equipment Browsing → Booking → Owner Booking Management → Equipment Images and Reviews.
+
+AI recommendation, SmartMatch, payment integration, maps, weather integration, notifications, and other future enhancements are outside the current Review-II API scope.
