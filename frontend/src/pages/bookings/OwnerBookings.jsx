@@ -18,6 +18,7 @@ import {
   getOwnerBookings,
   rejectBooking,
 } from "../../services/bookingService";
+import { getDemandTrends } from "../../services/aiService";
 import {
   formatCurrency,
   formatDate,
@@ -29,10 +30,26 @@ export default function OwnerBookings() {
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
   const [activeBookingId, setActiveBookingId] = useState("");
+  const [demandData, setDemandData] = useState(null);
+  const [demandLoading, setDemandLoading] = useState(true);
+  const [demandError, setDemandError] = useState("");
 
   useEffect(() => {
     loadOwnerBookings();
+    loadDemandTrends();
   }, []);
+
+  async function loadDemandTrends() {
+    setDemandLoading(true);
+    setDemandError("");
+    try {
+      setDemandData(await getDemandTrends());
+    } catch (requestError) {
+      setDemandError(requestError.message);
+    } finally {
+      setDemandLoading(false);
+    }
+  }
 
   async function loadOwnerBookings() {
     setLoading(true);
@@ -55,6 +72,9 @@ export default function OwnerBookings() {
     try {
       await action(bookingId);
       await loadOwnerBookings();
+      // Approving or cancelling changes which bookings qualify as historical
+      // demand, so the demand panel must be refreshed alongside the list.
+      await loadDemandTrends();
     } catch (error) {
       setActionError(error.message);
     } finally {
@@ -128,6 +148,49 @@ export default function OwnerBookings() {
         title="Owner Dashboard"
         description="Manage incoming rental requests, move approved bookings to completion, and keep equipment availability in sync."
       />
+
+      <section className="mb-8 rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
+        <h2 className="text-2xl font-bold text-slate-900">Demand Trend Intelligence</h2>
+        <p className="mt-1 text-slate-600">Historical approved and completed bookings by equipment category.</p>
+        {demandLoading ? (
+          <p className="mt-4 text-slate-500">Loading historical demand...</p>
+        ) : demandError ? (
+          <div className="mt-4">
+            <p role="alert" className="text-rose-700">{demandError}</p>
+            <button type="button" onClick={loadDemandTrends} className="mt-2 font-semibold text-violet-700 hover:underline">Retry</button>
+          </div>
+        ) : (
+          <>
+            {demandData?.insufficient_history ? (
+              <p className="mt-4 rounded-xl bg-amber-50 p-3 text-amber-900">
+                Forecasting is unavailable because insufficient historical booking data exists. At least 3 historical periods are needed.
+              </p>
+            ) : demandData?.forecast_available ? (
+              <p className="mt-4 text-slate-600">A forecast is available.</p>
+            ) : (
+              <p className="mt-4 rounded-xl bg-sky-50 p-3 text-sky-900">
+                Historical depth is sufficient for evaluation, but a forecasting method has not been selected.
+              </p>
+            )}
+            {demandData?.categories?.length ? (
+              <div className="mt-4 space-y-3">
+                {demandData.categories.map((series) => (
+                  <div key={series.category} className="rounded-xl border border-slate-200 p-4">
+                    <h3 className="font-semibold text-slate-900">{series.category}</h3>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {series.periods.map((period, index) => (
+                        <span key={period} className="mr-3">{period}: {series.demand_counts[index]} booking(s)</span>
+                      ))}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-4 text-slate-600">No approved or completed booking history is available yet.</p>
+            )}
+          </>
+        )}
+      </section>
 
       {actionError ? (
         <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700">
