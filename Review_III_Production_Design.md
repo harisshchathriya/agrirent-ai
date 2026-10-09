@@ -130,7 +130,12 @@ Results may be sorted by score descending, category, equipment name, and equipme
 
 ## 8. Cold-Start Recommendation Strategy
 
-For a farmer without approved or completed booking history, the system will use a clearly labeled popularity fallback:
+The system first scores available equipment from the authenticated farmer's
+approved and completed bookings. It sets `personalized=true` only when that
+history gives at least one available candidate a positive score. If the
+farmer's history is absent or has no matching signal for available equipment,
+the system may use overall popularity, setting `fallback_used=true` only when
+that source gives at least one available candidate a positive score:
 
 ```text
 Historical approved/completed bookings
@@ -148,7 +153,9 @@ Rank available candidates
 Return recommendations
 ```
 
-The fallback is not presented as personalized history. If there are no qualifying historical bookings at all, the service returns a safe empty or neutral result rather than inventing a preference.
+The fallback is not presented as personalized history. If neither personal
+history nor overall popularity yields a candidate signal, the service returns
+neutral zero scores with an explanation rather than inventing a preference.
 
 ## 9. Explainability
 
@@ -407,7 +414,7 @@ Diagrams are not modified during this design task.
 | Recommendation strategy | Deterministic frequency baseline | Explainable and supported by current booking data |
 | Historical preference calculation | Calculate from all qualifying farmer bookings before availability filtering | Keeps historical preference separate from current candidate availability |
 | Availability filtering | `equipment.availability == true` hard filter | Recommendations must contain currently available equipment only |
-| Cold-start fallback | Overall approved/completed equipment and category popularity | Provides a safe non-personalized fallback |
+| Cold-start/no-match fallback | Overall approved/completed equipment and category popularity, only when it scores an available candidate positively | Flags identify the source that actually influences the candidate ranking; no signal yields neutral scores |
 | Demand aggregation | Time period plus equipment category | Matches the approved demand-trend scope and current fields |
 | Demand sufficiency threshold | Minimum of 3 historical periods | Prevents a forecast attempt with the current one-period dataset |
 | Forecasting algorithm | Not selected yet | Current data is insufficient for model selection |
@@ -435,7 +442,14 @@ The enhancement explicitly excludes:
 
 The proposed production architecture keeps Review-III inside the existing AgriRent AI application and reuses the current PostgreSQL users, equipment, and bookings data.
 
-For recommendation, a production-ready deterministic baseline can be implemented using the current data structures. Historical approved and completed bookings will calculate farmer preferences independently of current availability. Available equipment will then be scored, sorted deterministically, and returned with explanations. Farmers without personal history will receive a clearly labeled popularity fallback.
+For recommendation, the implemented deterministic frequency baseline uses the
+current data structures. Approved and completed bookings calculate farmer
+preferences independently of current availability. Available equipment is
+scored, sorted deterministically, and returned with explanations. The response
+marks personalization only when personal history contributes a positive score
+to an available candidate. Otherwise, overall popularity may be used and
+explicitly marked as fallback; when neither source matches, neutral scores and
+a no-match message are returned.
 
 For demand intelligence, historical category demand can be exposed now, but forecasting must remain guarded until sufficient historical periods exist. The current development database has only one historical month, so no forecasting model or accuracy claim is made.
 

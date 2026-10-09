@@ -3,6 +3,7 @@
 ## Review-III
 
 - Added authenticated `GET /ai/recommendations` for farmer-only equipment recommendations using booking history, with historical popularity fallback.
+- Made recommendation flags reflect whether personal or overall booking history positively scores available candidates; unmatched history now produces neutral recommendations with a no-match explanation.
 - Added authenticated `GET /ai/demand-trends` with continuous monthly category history and a guarded three-month moving-average forecast when six observed months are available.
 - Added a three-origin chronological MAE comparison against a last-month naive baseline; the current local history is too sparse to produce real evaluation metrics or a forecast.
 - Added the AI recommendation and demand services, response schemas, and frontend integration through `frontend/src/services/aiService.js`.

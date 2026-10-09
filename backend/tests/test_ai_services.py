@@ -24,6 +24,10 @@ def test_personal_category_and_exact_frequency_scores():
     assert [(x.name, x.score) for x in result.recommendations] == [
         ("Used", 10), ("Similar", 4), ("Other", 0)]
     assert result.personalized and not result.fallback_used
+    assert "category 2 time(s)" in result.recommendations[0].explanation
+    assert "equipment 2 time(s)" in result.recommendations[0].explanation
+    assert "category 2 time(s)" in result.recommendations[1].explanation
+    assert "equipment 0 time(s)" in result.recommendations[1].explanation
 
 
 def test_unavailable_historical_equipment_still_contributes_preference():
@@ -84,6 +88,65 @@ def test_cold_start_uses_labeled_popularity_fallback():
     assert result.fallback_used and not result.personalized
     assert result.recommendations[0].name == "Popular"
     assert "Popularity fallback" in result.recommendations[0].explanation
+
+
+def test_personal_history_without_available_candidate_match_is_not_personalized():
+    farmer = uuid4()
+    old_equipment, candidate = item("Old listing", "Seasonal"), item("Available")
+    result = build_recommendations(
+        farmer, [(old_equipment.id, farmer, "Seasonal")], [candidate])
+
+    assert result.recommendations[0].score == 0
+    assert not result.personalized
+    assert not result.fallback_used
+    assert "No qualifying historical booking signal" in result.recommendations[0].explanation
+    assert result.message == "No qualifying booking signal matches the currently available equipment."
+
+
+def test_other_users_do_not_change_a_personalized_ranking():
+    farmer, another_farmer = uuid4(), uuid4()
+    used, candidate, other_category = item("Used"), item("Similar"), item("Other", "Soil")
+    personal_row = (used.id, farmer, "Heavy")
+    other_rows = [(other_category.id, another_farmer, "Soil")] * 5
+
+    alone = build_recommendations(farmer, [personal_row], [used, candidate, other_category])
+    mixed = build_recommendations(
+        farmer, [personal_row, *other_rows], [used, candidate, other_category])
+
+    assert [(r.equipment_id, r.score, r.explanation) for r in mixed.recommendations] == [
+        (r.equipment_id, r.score, r.explanation) for r in alone.recommendations
+    ]
+    assert mixed.personalized and not mixed.fallback_used
+    assert [r.score for r in mixed.recommendations] == [5, 2, 0]
+
+
+def test_population_fallback_is_used_when_personal_history_has_no_candidate_signal():
+    farmer, another_farmer = uuid4(), uuid4()
+    unavailable, candidate = item("Old", "Seasonal"), item("Available")
+    popular = item("Popular", item_id=candidate.id)
+    rows = [
+        (unavailable.id, farmer, "Seasonal"),
+        (popular.id, another_farmer, "Heavy"),
+        (popular.id, another_farmer, "Heavy"),
+    ]
+
+    result = build_recommendations(farmer, rows, [candidate])
+
+    assert not result.personalized and result.fallback_used
+    assert result.recommendations[0].score == 10
+    assert "Popularity fallback" in result.recommendations[0].explanation
+    assert "category has 2" in result.recommendations[0].explanation
+    assert "equipment has 2" in result.recommendations[0].explanation
+
+
+def test_no_qualifying_history_returns_neutral_unpersonalized_recommendations():
+    farmer = uuid4()
+    result = build_recommendations(farmer, [], [item("Available")])
+
+    assert result.recommendations[0].score == 0
+    assert not result.personalized and not result.fallback_used
+    assert "No qualifying historical booking signal" in result.recommendations[0].explanation
+    assert result.message == "No qualifying historical booking data is available."
 
 
 def test_empty_history_candidates_and_limit_are_safe():

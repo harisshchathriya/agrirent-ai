@@ -21,11 +21,33 @@ def build_recommendations(
 ) -> RecommendationResponse:
     """Rank available items from approved/completed booking counts."""
     personal = [row for row in historical_rows if row[1] == farmer_id]
-    personalized = bool(personal)
-    fallback_used = not personalized and bool(historical_rows)
-    evidence = personal if personalized else historical_rows
-    category_counts: Counter[str] = Counter(row[2] for row in evidence)
-    equipment_counts: Counter[UUID] = Counter(row[0] for row in evidence)
+
+    def counts_for(rows):
+        return Counter(row[2] for row in rows), Counter(row[0] for row in rows)
+
+    def has_candidate_signal(category_counts, equipment_counts):
+        return any(
+            category_counts[item.category] * 2 + equipment_counts[item.id] * 3 > 0
+            for item in available_equipment
+        )
+
+    personal_categories, personal_equipment = counts_for(personal)
+    personalized = bool(personal) and has_candidate_signal(
+        personal_categories, personal_equipment
+    )
+
+    population_categories, population_equipment = counts_for(historical_rows)
+    fallback_used = (
+        not personalized
+        and has_candidate_signal(population_categories, population_equipment)
+    )
+
+    if personalized:
+        category_counts, equipment_counts = personal_categories, personal_equipment
+    elif fallback_used:
+        category_counts, equipment_counts = population_categories, population_equipment
+    else:
+        category_counts, equipment_counts = Counter(), Counter()
 
     ranked = []
     for item in available_equipment:
@@ -34,7 +56,7 @@ def build_recommendations(
         score = category_frequency * 2 + exact_frequency * 3
         if personalized:
             explanation = (
-                f"Your historical bookings include this category {category_frequency} "
+                f"Your qualifying booking history includes this category {category_frequency} "
                 f"time(s) and this equipment {exact_frequency} time(s)."
             )
         elif fallback_used:
@@ -43,7 +65,7 @@ def build_recommendations(
                 f"historical booking(s) and this equipment has {exact_frequency}."
             )
         else:
-            explanation = "No historical booking data is available to rank this equipment."
+            explanation = "No qualifying historical booking signal matches this available equipment."
         ranked.append((
             -score, item.category, item.name, str(item.id),
             EquipmentRecommendation(
@@ -61,7 +83,15 @@ def build_recommendations(
         recommendations=[row[4] for row in ranked[:limit]],
         personalized=personalized,
         fallback_used=fallback_used,
-        message="No equipment is currently available." if not available_equipment else None,
+        message=(
+            "No equipment is currently available."
+            if not available_equipment
+            else "No qualifying booking signal matches the currently available equipment."
+            if not personalized and not fallback_used and historical_rows
+            else "No qualifying historical booking data is available."
+            if not personalized and not fallback_used
+            else None
+        ),
     )
 
 

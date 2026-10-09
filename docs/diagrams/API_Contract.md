@@ -456,10 +456,14 @@ Both AI endpoints require a valid JWT bearer token.
 ## GET /ai/recommendations
 
 Returns available equipment ranked using approved and completed booking
-history. Recommendations are personalized when the authenticated farmer has
-qualifying booking history; otherwise, the service may use historical booking
-popularity as a fallback. This endpoint is restricted to users with the FARMER
-role.
+history. The `personalized` flag is true only when the authenticated farmer's
+history gives at least one available candidate a positive score. If it does
+not, the service uses overall booking popularity only when it gives an
+available candidate a positive score, and sets `fallback_used` accordingly.
+When neither source matches available equipment, recommendations have neutral
+zero scores and explain that no historical booking signal matches. Other
+users' bookings can affect results only through this explicitly flagged
+popularity fallback. This endpoint is restricted to users with the FARMER role.
 
 ### Query Parameters
 
