@@ -10,6 +10,7 @@ import {
   getOwnerBookings,
 } from "../../services/bookingService";
 import { getEquipment } from "../../services/equipmentService";
+import { getRecommendations } from "../../services/aiService";
 import { AuthContext } from "../../context/authContext";
 
 export default function Dashboard() {
@@ -21,6 +22,35 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [errorTitle, setErrorTitle] = useState("Unable to load dashboard");
   const [reloadToken, setReloadToken] = useState(0);
+  const [recommendationData, setRecommendationData] = useState(null);
+  const [recommendationLoading, setRecommendationLoading] = useState(false);
+  const [recommendationError, setRecommendationError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    async function loadRecommendations() {
+      if (authLoading) return;
+      if (currentUser?.role !== "farmer") {
+        setRecommendationData(null);
+        setRecommendationError("");
+        setRecommendationLoading(false);
+        return;
+      }
+      setRecommendationData(null);
+      setRecommendationLoading(true);
+      setRecommendationError("");
+      try {
+        const data = await getRecommendations();
+        if (active) setRecommendationData(data);
+      } catch (requestError) {
+        if (active) setRecommendationError(requestError.message);
+      } finally {
+        if (active) setRecommendationLoading(false);
+      }
+    }
+    loadRecommendations();
+    return () => { active = false; };
+  }, [authLoading, currentUser]);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -199,6 +229,42 @@ export default function Dashboard() {
               color="#7c3aed"
             />
           </div>
+
+          {!isOwner && currentUser?.role === "farmer" ? (
+            <section className="mt-8 rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Recommended Equipment</h2>
+                  <p className="mt-1 text-slate-600">Ranked from approved and completed booking history.</p>
+                </div>
+                <Link to="/equipment" className="font-semibold text-emerald-700 hover:underline">Browse all equipment</Link>
+              </div>
+              {recommendationLoading ? (
+                <p className="mt-5 text-slate-500">Loading recommendations...</p>
+              ) : recommendationError ? (
+                <p role="alert" className="mt-5 rounded-xl bg-rose-50 p-4 text-rose-700">{recommendationError}</p>
+              ) : !recommendationData?.recommendations?.length ? (
+                <p className="mt-5 text-slate-600">{recommendationData?.message || "No equipment recommendations are available right now."}</p>
+              ) : (
+                <>
+                  {recommendationData.fallback_used ? (
+                    <p className="mt-4 rounded-xl bg-sky-50 p-3 text-sm text-sky-800">You have no qualifying booking history yet. These suggestions use overall equipment popularity.</p>
+                  ) : null}
+                  <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {recommendationData.recommendations.map((item) => (
+                      <article key={item.equipment_id} className="rounded-2xl border border-slate-200 p-4">
+                        <h3 className="font-semibold text-slate-900">{item.name}</h3>
+                        <p className="mt-1 text-sm text-slate-600">{item.category} · {item.location}</p>
+                        <p className="mt-3 text-sm text-slate-600">{item.explanation}</p>
+                        <p className="mt-2 text-xs text-slate-500">Relevance score: {item.score}</p>
+                        <Link to={`/equipment/details/${item.equipment_id}`} className="mt-3 inline-block font-semibold text-emerald-700 hover:underline">View details</Link>
+                      </article>
+                    ))}
+                  </div>
+                </>
+              )}
+            </section>
+          ) : null}
 
           {!isOwner && currentUser?.role === "farmer" ? (
             <div className="mt-8 rounded-3xl border border-sky-100 bg-sky-50 p-6">

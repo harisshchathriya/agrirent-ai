@@ -1,6 +1,6 @@
 # API Contract / OpenAPI Summary
 
-This document summarizes the current Review-II API surface implemented in the FastAPI backend.
+This document summarizes the implemented API surface, including Review-III AI endpoints, in the FastAPI backend.
 
 The canonical API contract is generated at runtime by FastAPI and is available through Swagger UI and the OpenAPI JSON specification.
 
@@ -104,6 +104,10 @@ Owner role required.
 
 The authenticated owner becomes the equipment owner.
 
+`image_url` is optional. When supplied, it must be a valid HTTP or HTTPS URL
+within 255 characters. Omitted, null, and blank values create a listing without
+an image.
+
 ---
 
 ## GET /equipment/{equipment_id}
@@ -125,6 +129,10 @@ Bearer JWT required.
 Owner role required.
 
 The authenticated user must own the equipment.
+
+All existing equipment fields remain required. `image_url` is optional: omitting
+the field preserves the current value; null or a blank string clears it; a
+supplied value must be a valid HTTP or HTTPS URL within 255 characters.
 
 ---
 
@@ -441,10 +449,72 @@ The generated OpenAPI specification is the canonical source for the implemented 
 
 ---
 
-# Review-II Scope
+# AI Insights
 
-The API contract covers the implemented Review-II rental workflow:
+Both AI endpoints require a valid JWT bearer token.
 
-Registration → Authentication → Equipment Management → Equipment Browsing → Booking → Owner Booking Management → Equipment Images and Reviews.
+## GET /ai/recommendations
 
-AI recommendation, SmartMatch, payment integration, maps, weather integration, notifications, and other future enhancements are outside the current Review-II API scope.
+Returns available equipment ranked using approved and completed booking
+history. Recommendations are personalized when the authenticated farmer has
+qualifying booking history; otherwise, the service may use historical booking
+popularity as a fallback. This endpoint is restricted to users with the FARMER
+role.
+
+### Query Parameters
+
+- `limit` (integer, optional): number of recommendations; defaults to 5 and
+  must be between 1 and 20.
+
+### Response
+
+Returns a `RecommendationResponse` containing `recommendations` (a list of
+`EquipmentRecommendation` values with equipment ID, name, category, location,
+score, and explanation), `personalized`, `fallback_used`, and an optional
+`message`.
+
+### Errors
+
+- 401 when authentication is missing or invalid.
+- 403 when the authenticated user is not a farmer.
+- 422 when `limit` is outside the accepted range or is not an integer.
+- 503 when a database error prevents recommendations from loading.
+
+## GET /ai/demand-trends
+
+Returns historical booking counts by equipment category and month, based on
+approved and completed bookings, plus a one-month moving-average forecast when
+the history sufficiency rule is met. Authentication is required; the endpoint
+has no role-specific restriction. This is a simple statistical baseline, not a
+trained model.
+
+### Response
+
+Returns a `DemandTrendResponse` containing historical period count and month
+labels, category series (`CategoryDemand` values with category, periods, and
+counts), `forecast_available`, `forecast_method`, one-month horizon,
+`forecast_periods`, category forecast values, chronological evaluation metrics,
+status, limitations, and an optional message. Six continuous monthly
+observations are required. Missing months between the first and last qualifying
+booking month are represented with zero approved/completed bookings; months
+outside that span are unknown. History that does not meet the threshold returns
+`insufficient_history` and no predicted values. The evaluation compares a
+three-month moving average with a last-month naive baseline over the latest
+three one-month holdout observations, each predicted from preceding months only.
+
+### Errors
+
+- 401 when authentication is missing or invalid.
+- 503 when a database error prevents demand trends from loading.
+
+---
+
+# Review-III Scope
+
+The API contract covers the implemented rental workflow and Review-III AI
+insights:
+
+Registration -> Authentication -> Equipment Management -> Equipment Browsing -> Booking -> Owner Booking Management -> Equipment Images and Reviews -> AI Recommendations and Historical Demand Trends.
+
+SmartMatch, payment integration, maps, weather integration, notifications, and
+other future enhancements remain outside the implemented API scope.

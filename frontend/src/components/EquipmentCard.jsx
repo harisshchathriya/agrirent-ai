@@ -1,22 +1,18 @@
 import { Link } from "react-router-dom";
-import { FaMapMarkerAlt, FaTractor } from "react-icons/fa";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import StatusBadge from "./StatusBadge";
+import EquipmentImage from "./EquipmentImage";
 import { formatCurrency } from "../utils/formatters";
 
 export default function EquipmentCard({ equipment }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <div className="flex h-52 items-center justify-center bg-gradient-to-br from-emerald-50 via-lime-50 to-amber-50">
-        {equipment.imageUrl ? (
-          <img
-            src={equipment.imageUrl}
-            alt={equipment.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <FaTractor className="text-8xl text-emerald-700" />
-        )}
-      </div>
+      <EquipmentImage
+        src={equipment.imageUrl}
+        alt={equipment.name}
+        containerClassName="h-52"
+        iconClassName="text-8xl text-emerald-700"
+      />
 
       <div className="space-y-5 p-6">
         <div className="flex items-start justify-between gap-4">
