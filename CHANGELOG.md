@@ -11,7 +11,8 @@
 - Made equipment image URLs optional on create/update, preserving omitted images and rendering a shared placeholder for missing or failed images; no migration was required.
 - Added owner equipment editing with image preview and explicit image removal.
 - Added demand forecast and optional image regression coverage.
-- Read-only production smoke check returned 200 for `/health`, `/docs`, `/openapi.json`, the frontend, and equipment reads. The deployed OpenAPI did not include AI routes and both AI URLs returned 404; authenticated workflows and writes were not performed.
+- Initial pre-merge read-only production smoke check (2026-10-09) returned 200 for `/health`, `/docs`, `/openapi.json`, the frontend, and equipment reads; the then-deployed OpenAPI omitted the AI routes and both AI URLs returned 404. This records the state before the Review-III deployment.
+- Post-merge verification confirmed the deployed OpenAPI lists both AI routes; fresh unauthenticated requests returned 401, while earlier authorized production requests returned 200. GitHub Actions passed on merged main commit `8779368`. The previously observed demand-trends response had one month of history and insufficient data for a defensible forecast.
 
 ## Review-II
 

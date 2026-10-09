@@ -16,7 +16,7 @@ The Review-III enhancement is designed specifically to implement this approved s
 
 AgriRent AI is an agricultural equipment rental marketplace. Farmers can browse agricultural equipment and create rental bookings. Equipment owners can list and manage equipment. Booking information is stored in PostgreSQL.
 
-The current system does not yet provide AI-powered equipment recommendations or AI-powered demand-trend prediction. The Review-III enhancement will extend the existing system while preserving its current rental workflow.
+At the time this proposal was prepared, the system did not provide AI-powered equipment recommendations or demand-trend prediction. Review-III extends the existing system while preserving its rental workflow.
 
 ## 4. Problem Statement
 
@@ -288,6 +288,6 @@ The enhancement will be successful when:
 
 ## 21. Final Submission Implementation and Data Limitation
 
-The implementation in this branch uses a deterministic frequency heuristic for recommendations, not a trained model. Its demand service supports a guarded three-month moving-average forecast for one month ahead after six continuous observed monthly periods, and reports chronological holdout MAE compared with a last-month naive baseline. The current local development snapshot has only one qualifying month (August 2026), so it correctly returns historical counts and `insufficient_history`; no forecast or real evaluation metric is claimed. The deployed Render API does not yet expose these AI routes.
+The implementation uses a deterministic frequency heuristic for recommendations, not a trained model. Its demand service supports a guarded three-month moving-average forecast for one month ahead after six continuous observed monthly periods, and reports chronological holdout MAE compared with a last-month naive baseline. The current local development snapshot has only one qualifying month (August 2026), so it correctly returns historical counts and `insufficient_history`; no forecast or real evaluation metric is claimed. PR #5 and PR #6 are merged, and the merged application is deployed on the existing Render backend and Vercel frontend. Fresh read-only verification found both AI routes in OpenAPI and returned HTTP 401 to unauthenticated requests. Earlier authorized production tests returned HTTP 200 for both routes. The previously observed demand-trends response had one observed month and insufficient history for a defensible forecast.
 
 Equipment image URLs are optional in equipment create/update requests and use the existing nullable `equipment.image_url` field. No schema migration was needed. A separate expired Render dataset is not represented by this local snapshot, and these findings must not be described as recovered production data.

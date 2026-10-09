@@ -86,20 +86,25 @@ Password reset tokens are stored separately in an authentication-only table; the
 - OpenAPI JSON: https://agrirent-ai-backend-yrxg.onrender.com/openapi.json
 - Health check: https://agrirent-ai-backend-yrxg.onrender.com/health
 
-This feature branch implements authentication, equipment management, booking
-workflows, equipment relations, and Review-III AI insights. Authenticated farmers can use
-`GET /ai/recommendations`; authenticated users can use
-`GET /ai/demand-trends` for historical category counts and a one-month forecast
-when at least six consecutive observed months are available. The forecast is a
-three-month moving average with a chronological three-month evaluation against
-a last-month naive baseline. Sparse history returns `insufficient_history` and
-no forecast. The recommendation method is a deterministic frequency heuristic,
-not a trained model.
+The deployed Review-III release is on the existing AgriRent AI application.
+Both AI routes require a valid JWT bearer token; `GET /ai/recommendations` is
+farmer-only, while `GET /ai/demand-trends` requires an authenticated user.
+Recommendations use a deterministic booking-frequency heuristic, not a
+trained model. Demand history is returned separately from a one-month-ahead
+three-month moving-average baseline. Forecasting requires at least six
+consecutive observed months; sparse history returns `insufficient_history`
+without a forecast. The baseline was not validated against sufficient real
+history, so no accuracy claim is made.
 
-The current deployed Render backend does not yet expose the AI routes: its live
-OpenAPI document omits both endpoints and direct requests return 404. Do not
-consider these endpoints live until a deployment containing this branch is
-verified.
+Release verification: PR #5 and PR #6 are merged, and GitHub Actions passed on
+the latest merged `main` commit `8779368` (backend tests, frontend tests, lint,
+and build). Render is serving the merged application. Fresh read-only checks
+returned HTTP 200 for the frontend, `/health`, `/docs`, and `/openapi.json`; the
+OpenAPI document lists both AI routes, and unauthenticated requests to each
+return HTTP 401. Separate earlier authorized production tests returned HTTP
+200 for both AI endpoints. The previously observed demand response contained
+one month of history and reported insufficient data for a defensible forecast.
+The current read-only checks did not repeat authenticated requests.
 
 Public registration requires a Farmer or Owner selection. The login screen also
 provides a password-reset flow: reset tokens are time-limited, stored only as
