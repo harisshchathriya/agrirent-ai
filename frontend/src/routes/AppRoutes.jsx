@@ -18,6 +18,7 @@ import Dashboard from "../pages/dashboard/Dashboard";
 import EquipmentList from "../pages/equipment/EquipmentList";
 import EquipmentDetails from "../pages/equipment/EquipmentDetails";
 import AddEquipment from "../pages/equipment/AddEquipment";
+import EditEquipment from "../pages/equipment/EditEquipment";
 
 // Bookings
 import MyBookings from "../pages/bookings/MyBookings";
@@ -77,6 +78,15 @@ export default function AppRoutes() {
           element={
             <RoleProtectedRoute allowedRoles={["owner"]}>
               <AddEquipment />
+            </RoleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/equipment/edit/:id"
+          element={
+            <RoleProtectedRoute allowedRoles={["owner"]}>
+              <EditEquipment />
             </RoleProtectedRoute>
           }
         />

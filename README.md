@@ -6,7 +6,9 @@ Agricultural Equipment Rental Platform
 
 AgriRent AI is a full-stack rental platform for agricultural equipment. Farmers can browse equipment, request bookings, and manage their own rentals, while owners can list equipment, approve booking requests, and manage their inventory. The application also includes an admin role for platform oversight and a secure JWT-based authentication flow.
 
-This repository is aligned to Review-II: the product scope is the working rental workflow, role-based access control, persistence, validation, and deployment readiness rather than later AI or enhancement features. Administrator accounts remain backend-controlled.
+This repository includes the Review-II rental workflow and Review-III AI
+insights, alongside role-based access control, persistence, validation, and
+deployment support. Administrator accounts remain backend-controlled.
 
 ## Problem Statement
 
@@ -20,6 +22,9 @@ The core problem is to reduce the friction between equipment owners and farmers 
 - Booking creation and lifecycle management
 - Validation for past-date, invalid-range, overlap, and ownership rules
 - Owner-only booking approval, rejection, completion, and cancellation actions
+- Optional equipment image URLs on listing creation and updates, with a placeholder when absent or unavailable
+- Farmer-only equipment recommendations using a deterministic booking-frequency heuristic
+- Authenticated historical demand by category/month and a guarded one-month moving-average forecast when enough history exists
 - PostgreSQL persistence via SQLAlchemy ORM
 - Pydantic request validation and safe CORS configuration
 - Health endpoint and basic backend logging
@@ -49,6 +54,7 @@ The application follows a simple three-tier design:
 - Frontend: React app serving role-based pages and API calls
 - Backend: FastAPI application with routers, services, and validation logic
 - Database: PostgreSQL for users, equipment, bookings, images, and reviews
+- AI insights: FastAPI services analyze existing booking and equipment data without adding database entities
 
 ## Roles and Permissions
 
@@ -62,7 +68,7 @@ Authorization is enforced on the backend and not only in the UI.
 
 ## Database / ER Information
 
-The Review-II database uses PostgreSQL and includes the core application entities:
+The PostgreSQL database includes the core application entities:
 
 - Users
 - Equipment
@@ -80,7 +86,20 @@ Password reset tokens are stored separately in an authentication-only table; the
 - OpenAPI JSON: https://agrirent-ai-backend-yrxg.onrender.com/openapi.json
 - Health check: https://agrirent-ai-backend-yrxg.onrender.com/health
 
-The API exposes the current Review-II flow for authentication, equipment management, booking workflows, and equipment relations.
+This feature branch implements authentication, equipment management, booking
+workflows, equipment relations, and Review-III AI insights. Authenticated farmers can use
+`GET /ai/recommendations`; authenticated users can use
+`GET /ai/demand-trends` for historical category counts and a one-month forecast
+when at least six consecutive observed months are available. The forecast is a
+three-month moving average with a chronological three-month evaluation against
+a last-month naive baseline. Sparse history returns `insufficient_history` and
+no forecast. The recommendation method is a deterministic frequency heuristic,
+not a trained model.
+
+The current deployed Render backend does not yet expose the AI routes: its live
+OpenAPI document omits both endpoints and direct requests return 404. Do not
+consider these endpoints live until a deployment containing this branch is
+verified.
 
 Public registration requires a Farmer or Owner selection. The login screen also
 provides a password-reset flow: reset tokens are time-limited, stored only as
@@ -165,6 +184,7 @@ cd backend
 python -m pytest -v --cov=app --cov-report=term-missing --cov-fail-under=40
 
 cd ../frontend
+npm test
 npm run lint
 npm run build
 ```
@@ -173,7 +193,7 @@ npm run build
 
 GitHub Actions validates the project on pushes to `main` and pull requests targeting `main`.
 
-The workflow installs backend dependencies, runs the backend test suite with coverage enforcement, installs frontend dependencies, runs ESLint, and builds the frontend. Deployment is triggered through the existing Render and Vercel repository integrations after success on the main branch.
+The workflow installs backend dependencies, runs the backend test suite with coverage enforcement, installs frontend dependencies, runs Node-based presentation tests and ESLint, and builds the frontend. Deployment is managed separately through the configured Render and Vercel integrations; this CI workflow does not deploy the application.
 
 ## Deployment
 
@@ -207,23 +227,27 @@ The backend must receive `DATABASE_URL` and `SECRET_KEY` from the deployment env
 
 ## Out-of-Scope Items / Limitations
 
-The current Review-II scope intentionally excludes AI recommendation enhancements, automated parsing features, price-insight analysis, and any later SmartMatch functionality.
+Review-III adds heuristic equipment recommendations, historical demand trends,
+and a guarded baseline forecast. The current local development database has one
+qualifying historical month, so it does not currently receive a forecast.
+Automated parsing, price-insight analysis, and SmartMatch remain outside the
+implemented scope.
 
 ## System Architecture
 
-![System Architecture](docs/diagrams/System_Architecture.png)
+System architecture: [Draw.io diagram](docs/diagrams/System_Architecture.drawio)
 
 ## Database ER Diagram
 
-![ER Diagram](docs/diagrams/ER_Diagram.svg)
+![ER Diagram](docs/diagrams/ER%20Diagram.svg)
 
 ## Module Diagram
 
-![Module Diagram](docs/diagrams/Module_Diagram.png)
+![Module Diagram](docs/diagrams/Module_Diagram.svg)
 
 ## Class Diagram
 
-![Class Diagram](docs/diagrams/Class_Diagram.png)
+![Class Diagram](docs/diagrams/UML%20CLASS.svg)
 
 ## Application Screenshots
 
@@ -334,8 +358,8 @@ The frontend reads its API base URL from `VITE_API_URL`. For local development, 
 
 ## Deployment
 
-The Review-II deployment uses Vercel for the frontend, Render for the FastAPI
-backend, and Render PostgreSQL for persistence.
+The deployment uses Vercel for the frontend, Render for the FastAPI
+backend, and Railway PostgreSQL for persistence.
 
 - Frontend: https://agrirent-ai-teal.vercel.app
 - Backend: https://agrirent-ai-backend-yrxg.onrender.com
@@ -369,9 +393,9 @@ the deployed service must receive its cloud `DATABASE_URL` before that command r
 
 GitHub Actions runs validation on pushes to `main` and on pull requests targeting `main`.
 The backend job runs the pytest suite with coverage enforcement, while the frontend job
-installs dependencies with `npm ci`, runs ESLint, and creates a production build with
-Vite. Any test, coverage, lint, or build failure returns a non-zero exit code and fails
-the workflow.
+installs dependencies with `npm ci`, runs Node-based presentation tests and ESLint, and
+creates a production build with Vite. Any test, coverage, lint, or build failure returns
+a non-zero exit code and fails the workflow.
 
 Run the same checks locally before opening a pull request:
 
@@ -380,27 +404,27 @@ cd backend
 pytest -v --cov=app --cov-report=term-missing --cov-fail-under=40
 
 cd ../frontend
-npm run lint
-npm run build
-npm ci
+npm test
 npm run lint
 npm run build
 ```
 
 ## Scope and Future Enhancements
 
-The current MVP scope is registration, login, JWT authentication, equipment browsing
-and creation, booking creation, renter bookings, owner booking management, validation,
-and PostgreSQL persistence. Notifications, payments, maps, weather,
-AI recommendations, and analytics are outside the current Problem Statement scope.
+The current scope includes registration, login, JWT authentication, equipment
+browsing and creation, booking workflows, owner booking management, validation,
+PostgreSQL persistence, equipment recommendations, and historical category
+demand trends. Recommendations and demand trends are documented in
+`docs/diagrams/API_Contract.md`. A forecast is returned only when the monthly
+history sufficiency rule is met; it is not currently available for the sparse
+local snapshot. Notifications,
+payments, maps, and weather remain future enhancements.
 
-- AI equipment recommendation
 - Google Maps integration
 - Weather API
 - Payment gateway
 - Ratings and reviews
 - Real-time notifications
-- Analytics dashboard
 
 ## Author
 

@@ -185,22 +185,22 @@ The current one-month dataset does not support a production forecasting claim. H
 
 ## 11. Demand Data Sufficiency Rule
 
-The initial baseline requires a minimum of **3 historical periods**. Three periods do not guarantee reliable forecasting; they are only a minimum gate for evaluating whether a baseline can be attempted.
+The implemented baseline requires **6 consecutive monthly periods** after filling gaps between the first and last qualifying booking months with zero approved/completed bookings. Months outside that observed span are unknown and are not fabricated. Six months is an implementation gate, not a claim that the forecast is reliable.
 
-If fewer than three periods exist, the service will:
+If fewer than six periods exist, the service will:
 
 - not generate a forecast;
 - return available historical demand information;
 - return an explicit insufficient-history state; and
 - not fabricate a prediction.
 
-The threshold may be revisited after representative historical data becomes available.
+The local development snapshot has one qualifying month, so it returns `insufficient_history` and no forecast. The threshold should be revisited only after representative history and evaluation results are available.
 
 ## 12. Forecasting Strategy
 
-The final forecasting algorithm is **not selected yet**. The Week 7 POC intentionally avoided selecting a complex forecasting model because the current database contains only one historical period.
+The production baseline is a **three-month moving average** for a one-month-ahead category forecast. It is evaluated chronologically over the latest three one-month holdout origins and compared with a last-month naive baseline; each origin uses only preceding observations. The current one-month database cannot run this evaluation or produce a forecast.
 
-After sufficient data becomes available, a lightweight forecasting baseline may be evaluated against the actual time series. LSTM, Prophet, XGBoost, Random Forest, TensorFlow, and PyTorch are not selected or promised by this design.
+This simple baseline is not a trained model and its results must not be described as accurate without measured evidence. Seasonal models and complex ML libraries remain unselected.
 
 ## 13. Proposed Backend Structure
 
@@ -209,6 +209,7 @@ The implemented Week 8 structure is:
 ```text
 backend/app/
     api/
+    schemas/
         ai_schema.py
     services/
         ai_recommendation_service.py
@@ -220,7 +221,7 @@ backend/app/
 Responsibilities:
 
 - **Recommendation service:** authenticated farmer history, preference calculation, candidate retrieval, ranking, and explanations.
-- **Demand service:** historical demand aggregation, category trends, historical-depth validation, and the future forecasting integration point.
+- **Demand service:** continuous monthly aggregation, category trends, sufficiency validation, guarded moving-average forecasts, and chronological baseline evaluation.
 - **AI API module:** authentication, request validation, service invocation, response serialization, and error handling.
 
 The router is registered in the existing FastAPI application. It introduces no new tables or model fields.
@@ -266,13 +267,13 @@ Conceptual demand response fields:
 - forecast availability or status; and
 - forecast values only when sufficient history exists.
 
-The implemented Pydantic response schemas use these fields. Recommendation responses contain `recommendations`, `personalized`, `fallback_used`, and an optional message; each recommendation contains equipment ID, name, category, location, score, and explanation. Demand responses contain historical period count and labels, category demand series, forecast availability, status, insufficient-history state, and an optional message. Forecast values are omitted because the forecasting method remains undecided.
+The implemented Pydantic response schemas use these fields. Recommendation responses contain `recommendations`, `personalized`, `fallback_used`, and an optional message; each recommendation contains equipment ID, name, category, location, score, and explanation. Demand responses also include forecast method, horizon, periods, category predictions, chronological evaluation MAE against a last-month baseline, status, limitations, and an optional message. Forecast values remain empty with `insufficient_history`.
 
 ## 16. Frontend Integration Design
 
 The existing React interface integrates the API responses without adding a separate page.
 
-The farmer dashboard shows recommended equipment, category, location, explanation, relevance score, and a link to equipment details. The owner bookings interface shows historical category demand and the forecast state.
+The farmer dashboard shows heuristic recommendations, category, location, explanation, relevance score, and a link to equipment details. The owner bookings interface separates historical counts from forecast values, method, horizon, evaluation, and limitations.
 
 When history is insufficient, the UI should show a clear message such as:
 
@@ -302,13 +303,17 @@ Demand service tests should cover:
 4. multiple historical periods;
 5. fewer than three periods;
 6. empty dataset; and
-7. no forecast returned when history is insufficient.
+7. continuous monthly periods and zero-filled gaps;
+8. no forecast returned when history is insufficient; and
+9. chronological holdout evaluation that does not use future observations.
 
 API tests should cover authentication, authenticated farmer identity, invalid `limit`, response structure, and safe service-error handling. The implementation must add at least one or two Review-III-specific unit tests.
 
 ## 18. Database Strategy
 
 The initial implementation will use the existing `users`, `equipment`, and `bookings` tables. No new database tables or migrations are planned. The schema will not be modified unless future implementation evidence demonstrates a real requirement.
+
+Equipment image URLs use the existing nullable `equipment.image_url` column. Create requests may omit the field; update requests preserve it when omitted and clear it only when null or blank is explicitly supplied. No database migration is required. Existing `equipment_images` relationships and cascade behavior are unchanged.
 
 ## 19. Dependency Strategy
 
@@ -433,5 +438,15 @@ The proposed production architecture keeps Review-III inside the existing AgriRe
 For recommendation, a production-ready deterministic baseline can be implemented using the current data structures. Historical approved and completed bookings will calculate farmer preferences independently of current availability. Available equipment will then be scored, sorted deterministically, and returned with explanations. Farmers without personal history will receive a clearly labeled popularity fallback.
 
 For demand intelligence, historical category demand can be exposed now, but forecasting must remain guarded until sufficient historical periods exist. The current development database has only one historical month, so no forecasting model or accuracy claim is made.
+
+## 29. Final Submission Implementation Status
+
+The branch implementation creates a continuous monthly series between the first and last approved/completed booking month, including zero-count gaps. It skips missing dates/categories and excludes pending, rejected, and cancelled bookings. When six months are available, it returns a one-month-ahead, per-category three-month moving-average baseline plus a chronological three-origin MAE comparison with the last-month naive baseline. This is a lightweight statistical baseline, not a trained model. The current deployed Render API does not yet expose the AI routes.
+
+The read-only local database check for this submission found 13 bookings from 2026-08-04 through 2026-08-27. Ten approved/completed bookings occurred in 2026-08 (9 Heavy, 1 Soil Preparation). One month is insufficient, so the actual response reports `insufficient_history`, no prediction, and no real evaluation metric. Synthetic unit fixtures validate the branch and calculations but are not presented as business data.
+
+Equipment create/update accepts an optional validated HTTP(S) `image_url`. Omitted update values preserve the stored URL; explicit null/blank clears it. The existing nullable model column and equipment-image relationship are unchanged. The owner UI supports editing, optional URL preview, and a shared fallback placeholder for missing or failed image URLs.
+
+Read-only production smoke check (2026-10-09): frontend, `/health`, `/docs`, `/openapi.json`, equipment list/detail, and equipment-image GET requests returned HTTP 200. The health body was `{"status":"ok"}`. The deployed OpenAPI contained no `/ai/*` paths and direct requests to both AI routes returned 404, so the deployed backend does not match this branch's Review-III API. An intentionally invalid login returned 401, and unauthenticated booking endpoints returned 401. No valid farmer/owner test credentials were supplied; authenticated workflows and all production writes were not run. No deployment was triggered.
 
 The design prioritizes correctness, explainability, minimal complexity, safe integration, existing database reuse, testability, and production compatibility.

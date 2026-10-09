@@ -113,6 +113,8 @@ def test_demand_response_and_insufficient_history(monkeypatch):
         assert response.status_code == 200
         assert response.json()["insufficient_history"] is True
         assert response.json()["forecast_available"] is False
+        assert response.json()["forecasts"] == []
+        assert response.json()["forecast_method"] is None
         service.assert_called_once_with(db)
     finally:
         clear_overrides()

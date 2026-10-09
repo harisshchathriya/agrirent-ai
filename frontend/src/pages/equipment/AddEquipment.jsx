@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import MainLayout from "../../layouts/MainLayout";
+import EquipmentImage from "../../components/EquipmentImage";
+import { validateOptionalImageUrl } from "../../utils/equipmentPresentation";
 import { createEquipment } from "../../services/equipmentService";
 
 const initialFormData = {
@@ -10,6 +12,7 @@ const initialFormData = {
   description: "",
   location: "",
   price_per_day: "",
+  image_url: "",
 };
 
 export default function AddEquipment() {
@@ -59,6 +62,9 @@ export default function AddEquipment() {
         "Price per day must be greater than zero.";
     }
 
+    const imageUrlError = validateOptionalImageUrl(formData.image_url);
+    if (imageUrlError) nextErrors.image_url = imageUrlError;
+
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
@@ -81,6 +87,7 @@ export default function AddEquipment() {
         description: formData.description.trim(),
         location: formData.location.trim(),
         price_per_day: Number(formData.price_per_day),
+        image_url: formData.image_url.trim() || null,
       });
 
       setSuccessMessage(
@@ -209,6 +216,37 @@ export default function AddEquipment() {
                 {errors.description}
               </p>
             ) : null}
+          </div>
+
+          <div className="mt-6">
+            <label htmlFor="equipment-image-url" className="mb-2 block font-semibold text-slate-700">
+              Equipment image (optional)
+            </label>
+            <input
+              id="equipment-image-url"
+              name="image_url"
+              type="text"
+              inputMode="url"
+              maxLength={255}
+              value={formData.image_url}
+              onChange={handleChange}
+              placeholder="https://example.com/equipment.jpg"
+              aria-describedby={errors.image_url ? "equipment-image-error" : "equipment-image-help"}
+              aria-invalid={Boolean(errors.image_url)}
+              className="w-full rounded-xl border border-slate-200 p-3 outline-none transition focus:border-emerald-500"
+            />
+            <p id="equipment-image-help" className="mt-2 text-sm text-slate-500">
+              Add a public image URL or leave this blank to use the equipment placeholder.
+            </p>
+            {errors.image_url ? (
+              <p id="equipment-image-error" role="alert" className="mt-2 text-sm text-rose-600">{errors.image_url}</p>
+            ) : null}
+            <EquipmentImage
+              src={formData.image_url.trim()}
+              alt="Equipment image preview"
+              containerClassName="mt-4 h-48 rounded-xl"
+              iconClassName="text-6xl text-emerald-700"
+            />
           </div>
 
           {successMessage ? (

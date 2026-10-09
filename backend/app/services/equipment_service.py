@@ -26,6 +26,7 @@ def create_equipment(
         description=equipment.description,
         price_per_day=equipment.price_per_day,
         location=equipment.location,
+        image_url=equipment.image_url,
     )
 
     db.add(new_equipment)
@@ -69,6 +70,8 @@ def update_equipment(
     equipment.description = updated_data.description
     equipment.price_per_day = updated_data.price_per_day
     equipment.location = updated_data.location
+    if "image_url" in updated_data.model_fields_set:
+        equipment.image_url = updated_data.image_url
 
     db.commit()
     db.refresh(equipment)

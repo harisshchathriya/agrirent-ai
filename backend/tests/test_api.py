@@ -258,6 +258,36 @@ def test_create_equipment_success_calls_service(authenticated_client, monkeypatc
     assert service.call_args.args[2] is user
 
 
+def test_create_equipment_accepts_optional_image_url(authenticated_client, monkeypatch):
+    test_client, _, user = authenticated_client
+    user.role = "owner"
+    equipment = make_equipment(user.id)
+    equipment.image_url = "https://example.com/tractor.jpg"
+    service = MagicMock(return_value=equipment)
+    monkeypatch.setattr(equipment_api, "create_equipment", service)
+    response = test_client.post("/equipment", json={
+        "name": "Tractor", "category": "Heavy", "description": "Reliable",
+        "price_per_day": 2500, "location": "Trichy",
+        "image_url": "https://example.com/tractor.jpg",
+    })
+    assert response.status_code == 200
+    assert response.json()["image_url"] == "https://example.com/tractor.jpg"
+    assert service.call_args.args[1].image_url == "https://example.com/tractor.jpg"
+
+
+def test_create_equipment_rejects_invalid_optional_image_url(authenticated_client, monkeypatch):
+    test_client, _, user = authenticated_client
+    user.role = "owner"
+    service = MagicMock()
+    monkeypatch.setattr(equipment_api, "create_equipment", service)
+    response = test_client.post("/equipment", json={
+        "name": "Tractor", "category": "Heavy", "description": "Reliable",
+        "price_per_day": 2500, "location": "Trichy", "image_url": "not-a-url",
+    })
+    assert response.status_code == 422
+    service.assert_not_called()
+
+
 def test_create_equipment_rejects_non_owner(authenticated_client, monkeypatch):
     test_client, _, _ = authenticated_client
     service = MagicMock()
@@ -327,6 +357,41 @@ def test_update_equipment_rejects_non_owner(authenticated_client, monkeypatch):
 
     assert test_client.put(f"/equipment/{equipment.id}", json=payload).status_code == 403
     service.assert_not_called()
+
+
+def test_owner_cannot_update_another_owners_equipment(authenticated_client, monkeypatch):
+    test_client, _, user = authenticated_client
+    user.role = "owner"
+    equipment = make_equipment(uuid4())
+    monkeypatch.setattr(equipment_api, "get_equipment_by_id", MagicMock(return_value=equipment))
+    service = MagicMock()
+    monkeypatch.setattr(equipment_api, "update_equipment", service)
+    payload = {
+        "name": "Tractor", "category": "Tractor", "description": "Reliable tractor",
+        "price_per_day": 2500, "location": "Trichy",
+    }
+
+    response = test_client.put(f"/equipment/{equipment.id}", json=payload)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You are not allowed to update this equipment"
+    service.assert_not_called()
+
+
+def test_update_equipment_accepts_omitted_optional_image(authenticated_client, monkeypatch):
+    test_client, _, user = authenticated_client
+    user.role = "owner"
+    equipment = make_equipment(user.id)
+    equipment.image_url = "https://example.com/existing.jpg"
+    monkeypatch.setattr(equipment_api, "get_equipment_by_id", MagicMock(return_value=equipment))
+    service = MagicMock(return_value=equipment)
+    monkeypatch.setattr(equipment_api, "update_equipment", service)
+    response = test_client.put(f"/equipment/{equipment.id}", json={
+        "name": "Tractor", "category": "Heavy", "description": "Updated",
+        "price_per_day": 2500, "location": "Trichy",
+    })
+    assert response.status_code == 200
+    assert "image_url" not in service.call_args.args[2].model_fields_set
 
 
 def test_admin_cannot_update_owned_equipment(authenticated_client, monkeypatch):

@@ -19,6 +19,7 @@ import {
   rejectBooking,
 } from "../../services/bookingService";
 import { getDemandTrends } from "../../services/aiService";
+import { getDemandDisplayState } from "../../utils/equipmentPresentation";
 import {
   formatCurrency,
   formatDate,
@@ -33,6 +34,7 @@ export default function OwnerBookings() {
   const [demandData, setDemandData] = useState(null);
   const [demandLoading, setDemandLoading] = useState(true);
   const [demandError, setDemandError] = useState("");
+  const demandState = getDemandDisplayState(demandData);
 
   useEffect(() => {
     loadOwnerBookings();
@@ -161,18 +163,40 @@ export default function OwnerBookings() {
           </div>
         ) : (
           <>
-            {demandData?.insufficient_history ? (
+            {demandState === "insufficient" ? (
               <p className="mt-4 rounded-xl bg-amber-50 p-3 text-amber-900">
-                Forecasting is unavailable because insufficient historical booking data exists. At least 3 historical periods are needed.
+                {demandData.message || "There is not enough consecutive monthly history to forecast demand."}
               </p>
-            ) : demandData?.forecast_available ? (
-              <p className="mt-4 text-slate-600">A forecast is available.</p>
-            ) : (
+            ) : demandState === "forecast" ? (
+              <div className="mt-4 rounded-xl bg-sky-50 p-4 text-sky-950">
+                <h3 className="font-semibold">Forecasted demand</h3>
+                <p className="mt-1 text-sm">
+                  {demandData.forecast_method?.replaceAll("_", " ")} · {demandData.forecast_horizon_months}-month horizon
+                </p>
+                {demandData.forecasts?.length ? (
+                  <ul className="mt-3 space-y-1">
+                    {demandData.forecasts.map((forecast) => (
+                      <li key={`${forecast.category}-${forecast.period}`}>
+                        {forecast.category}, {forecast.period}: {forecast.predicted_bookings} predicted booking(s)
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {demandData.evaluation ? (
+                  <p className="mt-3 text-sm">
+                    Chronological holdout ({demandData.evaluation.evaluation_start}–{demandData.evaluation.evaluation_end}, {demandData.evaluation.observations} months): moving-average MAE {demandData.evaluation.mae}; last-month baseline MAE {demandData.evaluation.baseline_mae}.
+                  </p>
+                ) : null}
+                {demandData.limitations?.length ? (
+                  <p className="mt-2 text-sm">Limitations: {demandData.limitations.join(" ")}</p>
+                ) : null}
+              </div>
+            ) : demandState === "historical" ? (
               <p className="mt-4 rounded-xl bg-sky-50 p-3 text-sky-900">
-                Historical depth is sufficient for evaluation, but a forecasting method has not been selected.
+                Historical counts are shown below; a forecast is not available in this response.
               </p>
-            )}
-            {demandData?.categories?.length ? (
+            ) : null}
+            {demandState !== "empty" && demandData?.categories?.length ? (
               <div className="mt-4 space-y-3">
                 {demandData.categories.map((series) => (
                   <div key={series.category} className="rounded-xl border border-slate-200 p-4">

@@ -122,11 +122,56 @@ def test_three_periods_do_not_fabricate_forecast_and_empty_history_safe():
         (BookingStatus.COMPLETED, date(2026, month, 1), "Heavy")
         for month in (1, 2, 3)])
     empty = build_demand_trends([])
-    assert not enough.insufficient_history
+    assert enough.insufficient_history
     assert not enough.forecast_available
-    assert enough.status == "forecasting_not_selected"
+    assert enough.status == "insufficient_history"
     assert empty.insufficient_history and empty.categories == []
     assert not empty.forecast_available
+
+
+def test_demand_history_inserts_zero_months_between_observations():
+    result = build_demand_trends([
+        (BookingStatus.COMPLETED, date(2026, 1, 5), "Heavy"),
+        (BookingStatus.APPROVED, date(2026, 3, 5), "Heavy"),
+    ])
+    assert result.historical_periods == ["2026-01", "2026-02", "2026-03"]
+    assert result.categories[0].demand_counts == [1, 0, 1]
+    assert result.status == "insufficient_history"
+    assert result.forecasts == []
+
+
+def test_moving_average_forecast_and_chronological_naive_evaluation():
+    rows = [
+        (BookingStatus.COMPLETED, date(2026, month, 5), "Heavy")
+        for month, count in enumerate((2, 4, 6, 8, 10, 12), start=1)
+        for _ in range(count)
+    ]
+    result = build_demand_trends(rows)
+    assert result.forecast_available
+    assert result.status == "forecast_available"
+    assert result.forecast_method == "three_month_moving_average"
+    assert result.forecast_horizon_months == 1
+    assert result.forecast_periods == ["2026-07"]
+    assert result.forecasts[0].predicted_bookings == 10
+    assert result.evaluation.evaluation_start == "2026-04"
+    assert result.evaluation.evaluation_end == "2026-06"
+    assert result.evaluation.observations == 3
+    assert result.evaluation.mae == 4
+    assert result.evaluation.baseline == "last_month_naive"
+    assert result.evaluation.baseline_mae == 2
+    assert any("higher MAE" in limitation for limitation in result.limitations)
+
+
+def test_demand_skips_invalid_missing_dates_and_non_demand_statuses():
+    result = build_demand_trends([
+        (BookingStatus.COMPLETED, None, "Heavy"),
+        (BookingStatus.APPROVED, date(2026, 1, 1), " "),
+        (BookingStatus.PENDING, date(2026, 1, 1), "Heavy"),
+    ])
+    assert result.historical_periods == []
+    assert result.categories == []
+    assert result.forecasts == []
+    assert result.insufficient_history
 
 
 def test_only_approved_and_completed_are_historical_statuses():

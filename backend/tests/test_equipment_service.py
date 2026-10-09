@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi import HTTPException
 from uuid import uuid4
+from pydantic import ValidationError
 
 from app.models.equipment import Equipment
 from app.models.user import User, UserRole
@@ -48,6 +49,64 @@ def test_create_equipment():
     db.add.assert_called_once_with(result)
     db.commit.assert_called_once()
     db.refresh.assert_called_once_with(result)
+
+
+def test_create_equipment_without_image_and_with_valid_image_url():
+    owner = User(id=uuid4(), name="Owner", email="owner@example.com",
+                 hashed_password="hashed", phone="9876543210", role=UserRole.OWNER)
+    no_image = EquipmentCreate(name="Tractor", category="Heavy", description="Good",
+                               price_per_day=100, location="Trichy")
+    with_image = EquipmentCreate(name="Tractor", category="Heavy", description="Good",
+                                 price_per_day=100, location="Trichy",
+                                 image_url=" https://example.com/tractor.jpg ")
+    assert no_image.image_url is None
+    assert with_image.image_url == "https://example.com/tractor.jpg"
+
+    db = MagicMock()
+    created = equipment_service.create_equipment(db, no_image, owner)
+    assert created.image_url is None
+    db = MagicMock()
+    created = equipment_service.create_equipment(db, with_image, owner)
+    assert created.image_url == "https://example.com/tractor.jpg"
+
+
+@pytest.mark.parametrize("image_url", ["", "   ", None])
+def test_equipment_create_normalizes_empty_image_values(image_url):
+    data = EquipmentCreate(name="Tractor", category="Heavy", description="Good",
+                           price_per_day=100, location="Trichy", image_url=image_url)
+    assert data.image_url is None
+
+
+@pytest.mark.parametrize("image_url", ["not-a-url", "ftp://example.com/file.jpg", "x" * 256])
+def test_equipment_rejects_invalid_image_values(image_url):
+    with pytest.raises(ValidationError):
+        EquipmentCreate(name="Tractor", category="Heavy", description="Good",
+                        price_per_day=100, location="Trichy", image_url=image_url)
+
+
+def test_equipment_update_preserves_omitted_image_and_clears_explicit_empty_image():
+    equipment = Equipment(owner_id=uuid4(), name="Tractor", category="Heavy",
+                          description="Good", price_per_day=100, location="Trichy",
+                          image_url="https://example.com/existing.jpg")
+    values = dict(name="Tractor 2", category="Heavy", description="Good",
+                  price_per_day=125, location="Trichy")
+    omitted = EquipmentUpdate(**values)
+    assert "image_url" not in omitted.model_fields_set
+    equipment_service.update_equipment(MagicMock(), equipment, omitted)
+    assert equipment.image_url == "https://example.com/existing.jpg"
+
+    explicit_empty = EquipmentUpdate(**values, image_url=" ")
+    assert explicit_empty.image_url is None
+    assert "image_url" in explicit_empty.model_fields_set
+    equipment_service.update_equipment(MagicMock(), equipment, explicit_empty)
+    assert equipment.image_url is None
+
+
+def test_existing_equipment_without_image_remains_valid():
+    equipment = Equipment(owner_id=uuid4(), name="Older listing", category="Heavy",
+                          description="No photo", price_per_day=100,
+                          location="Trichy", image_url=None)
+    assert equipment.image_url is None
 
 
 def test_get_all_equipment():

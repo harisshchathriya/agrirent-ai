@@ -484,6 +484,17 @@
             </mxGeometry>
           </mxCell>
         </UserObject>
+        <mxCell id="r3-ai-title" value="Review-III AI Modules" style="text;html=1;align=center;verticalAlign=middle;fontSize=22;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2450" y="120" width="820" height="55" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-frontend" value="Frontend AI service&lt;br&gt;frontend/src/services/aiService.js&lt;br&gt;getRecommendations()&lt;br&gt;getDemandTrends()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;" vertex="1" parent="1"><mxGeometry x="2450" y="220" width="360" height="150" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-router" value="AI API router&lt;br&gt;backend/app/api/ai.py&lt;br&gt;GET /ai/recommendations&lt;br&gt;GET /ai/demand-trends" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;" vertex="1" parent="1"><mxGeometry x="2880" y="220" width="390" height="150" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-recommend" value="Recommendation service&lt;br&gt;backend/app/services/ai_recommendation_service.py&lt;br&gt;get_recommendations()&lt;br&gt;build_recommendations()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="1"><mxGeometry x="2450" y="460" width="360" height="150" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-demand" value="Demand service&lt;br&gt;backend/app/services/ai_demand_service.py&lt;br&gt;Continuous monthly aggregation&lt;br&gt;Guarded 1-month moving-average forecast&lt;br&gt;Chronological naive-baseline evaluation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="1"><mxGeometry x="2880" y="460" width="390" height="150" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-schema" value="AI response schemas&lt;br&gt;backend/app/schemas/ai_schema.py&lt;br&gt;RecommendationResponse&lt;br&gt;EquipmentRecommendation&lt;br&gt;DemandTrendResponse&lt;br&gt;CategoryDemand, CategoryForecast&lt;br&gt;ForecastEvaluation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" vertex="1" parent="1"><mxGeometry x="2650" y="710" width="420" height="190" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-e1" value="" style="endArrow=classic;html=1;strokeWidth=2;" edge="1" parent="1" source="r3-ai-frontend" target="r3-ai-router"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-e2" value="" style="endArrow=classic;html=1;strokeWidth=2;" edge="1" parent="1" source="r3-ai-router" target="r3-ai-recommend"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-e3" value="" style="endArrow=classic;html=1;strokeWidth=2;" edge="1" parent="1" source="r3-ai-router" target="r3-ai-demand"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-e4" value="" style="endArrow=classic;html=1;strokeWidth=2;" edge="1" parent="1" source="r3-ai-recommend" target="r3-ai-schema"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r3-ai-e5" value="" style="endArrow=classic;html=1;strokeWidth=2;" edge="1" parent="1" source="r3-ai-demand" target="r3-ai-schema"><mxGeometry relative="1" as="geometry"/></mxCell>
       </root>
     </mxGraphModel>
   </diagram>

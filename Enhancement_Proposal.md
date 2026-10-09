@@ -285,3 +285,9 @@ The enhancement will be successful when:
 - existing Review-II functionality continues to work;
 - the feature is deployed to the same production application; and
 - documentation is updated.
+
+## 21. Final Submission Implementation and Data Limitation
+
+The implementation in this branch uses a deterministic frequency heuristic for recommendations, not a trained model. Its demand service supports a guarded three-month moving-average forecast for one month ahead after six continuous observed monthly periods, and reports chronological holdout MAE compared with a last-month naive baseline. The current local development snapshot has only one qualifying month (August 2026), so it correctly returns historical counts and `insufficient_history`; no forecast or real evaluation metric is claimed. The deployed Render API does not yet expose these AI routes.
+
+Equipment image URLs are optional in equipment create/update requests and use the existing nullable `equipment.image_url` field. No schema migration was needed. A separate expired Render dataset is not represented by this local snapshot, and these findings must not be described as recovered production data.
